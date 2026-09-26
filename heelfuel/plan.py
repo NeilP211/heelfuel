@@ -39,8 +39,8 @@ def _verdict(tot: dict, n_meals: int) -> list[str]:
         notes.append(f"{k:,.0f} kcal sits inside the {d.kcal_lo:,.0f} to {d.kcal_hi:,.0f} maingain range.")
     if tot["fiber"] < d.fiber * 0.75:
         notes.append(f"Fiber is {tot['fiber']:.0f} g; aim for about {d.fiber:.0f} g with an extra fruit or beans.")
-    if tot["sodium"] > d.sodium_allowance * 1.2:
-        notes.append(f"Sodium totals {tot['sodium']:,.0f} mg; drink plenty of water, especially if you want to look lean tomorrow.")
+    if tot["sodium"] > d.sodium_allowance:
+        notes.append(f"Sodium totals {tot['sodium']:,.0f} mg, over the {d.sodium_allowance:,.0f} mg a sweaty lifter can reasonably use; drink plenty of water, especially if you want to look lean tomorrow.")
     if n_meals < 3:
         notes.append("Fewer than three meals are posted, so this total covers only part of the day.")
     return notes
