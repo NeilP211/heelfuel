@@ -432,7 +432,10 @@ window.HEELFUEL = /*__HEELFUEL_DATA__*/null;
     if (!p) { el.innerHTML = '<div class="card empty">' + esc(h.name) + " has nothing posted for this day.</div>"; return; }
     var head = '<div class="period-head"><h3>' + esc(p.label) + (p.hours ? ' <span class="sub">' + esc(p.hours) + "</span>" : "") + "</h3>" +
       '<div class="sub">Built for about ' + num(p.target.kcal) + " kcal and " + num(p.target.protein) + " g protein" +
-      (p.counts ? "" : " (an alternate to the main meal, not an extra one)") + "</div></div>";
+      (p.counts ? "" : " (an alternate to the main meal, not an extra one)") + "</div>" +
+      (p.missing_recipes ? '<div class="sub">' + p.missing_recipes + " item" + (p.missing_recipes > 1 ? "s" : "") +
+        " on this line had no nutrition label when this was built, so " + (p.missing_recipes > 1 ? "they weren't" : "it wasn't") + " considered.</div>" : "") +
+      "</div>";
     if (!p.combos.length) {
       el.innerHTML = head + '<div class="card empty">Nothing on this line adds up to a real meal. Check the menu for grab-and-go options.</div>';
       return;
