@@ -1,0 +1,12 @@
+[project]
+name = "heelfuel"
+version = "1.0.0"
+description = "Daily high-protein meal picks for UNC's Top of Lenoir and Chase dining halls"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

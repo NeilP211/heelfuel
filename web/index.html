@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HeelFuel</title>
+<meta name="description" content="The best high-protein meals at UNC's Top of Lenoir and Chase dining halls, rebuilt every morning from the posted menus.">
+<meta name="theme-color" content="#13294B">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="favicon.svg">
+<style>
+:root {
+  --bg: #f4f7fb;
+  --card: #ffffff;
+  --ink: #0f1f38;
+  --muted: #5b6b82;
+  --line: #e1e8f0;
+  --soft: #eef4fa;
+  --accent: #4b9cd3;
+  --accent-ink: #1b6ea8;
+  --navy: #13294b;
+  --good: #1f9d63;
+  --good-soft: #e3f5ec;
+  --warn: #c7771a;
+  --warn-soft: #fbf0e1;
+  --bad: #c9423a;
+  --bad-soft: #fbe6e4;
+  --shadow: 0 1px 2px rgba(15, 31, 56, .06), 0 4px 16px rgba(15, 31, 56, .05);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b1424;
+    --card: #121e33;
+    --ink: #e8eef7;
+    --muted: #9aabc3;
+    --line: #22324d;
+    --soft: #172640;
+    --accent: #6fb6e6;
+    --accent-ink: #8cc7ee;
+    --navy: #0b1424;
+    --good: #45c28a;
+    --good-soft: #143528;
+    --warn: #e6a04a;
+    --warn-soft: #3a2a14;
+    --bad: #ef7a72;
+    --bad-soft: #3d1b1a;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3);
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-variant-numeric: tabular-nums;
+  overflow-x: hidden;
+}
+a { color: var(--accent-ink); }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+.wrap { max-width: 760px; margin: 0 auto; padding: 0 16px calc(40px + env(safe-area-inset-bottom)); }
+
+header.top {
+  background: var(--navy);
+  color: #fff;
+  padding: calc(14px + env(safe-area-inset-top)) 0 18px;
+}
+header.top .wrap { padding-bottom: 0; }
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand svg { flex: none; }
+.brand h1 { margin: 0; font-size: 22px; letter-spacing: -.01em; }
+.brand p { margin: 0; font-size: 13px; color: #b8cbe4; }
+.meta { margin-top: 12px; font-size: 12.5px; color: #b8cbe4; display: flex; flex-wrap: wrap; gap: 4px 12px; }
+.meta b { color: #fff; font-weight: 600; }
+
+.seg { display: inline-flex; background: var(--soft); border-radius: 10px; padding: 3px; gap: 2px; max-width: 100%; }
+.top .seg { background: rgba(255,255,255,.1); margin-top: 14px; }
+.seg button {
+  border: 0; background: transparent; padding: 7px 12px; border-radius: 8px; cursor: pointer;
+  font-size: 14px; font-weight: 600; color: var(--muted); white-space: nowrap;
+}
+.top .seg button { color: #cfe0f5; }
+.seg button[aria-pressed="true"] { background: var(--card); color: var(--ink); box-shadow: var(--shadow); }
+.top .seg button[aria-pressed="true"] { background: #fff; color: var(--navy); }
+
+.banner { margin: 14px 0 0; padding: 10px 12px; border-radius: 10px; background: var(--warn-soft); color: var(--ink); font-size: 13.5px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); }
+section.day { margin-top: 16px; padding: 16px; }
+.sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+h2 { font-size: 17px; margin: 0; letter-spacing: -.01em; }
+.sub { color: var(--muted); font-size: 13px; }
+.picks { list-style: none; margin: 12px 0 0; padding: 0; }
+.picks li { border-top: 1px solid var(--line); }
+.picks li:first-child { border-top: 0; }
+.pick {
+  width: 100%; text-align: left; background: none; border: 0; padding: 10px 0; cursor: pointer;
+  display: grid; grid-template-columns: 78px 1fr auto; gap: 10px; align-items: center;
+}
+.pick .slot { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.pick .what { min-width: 0; }
+.pick .what b { display: block; font-size: 14.5px; overflow-wrap: anywhere; }
+.pick .what span { font-size: 12.5px; color: var(--muted); }
+.pick .nums { text-align: right; font-size: 13px; white-space: nowrap; }
+.pick .nums b { display: block; font-size: 15px; }
+
+.bars { margin-top: 14px; display: grid; gap: 10px; }
+.bar-row { display: grid; grid-template-columns: 64px 1fr auto; gap: 10px; align-items: center; font-size: 13px; }
+.bar-row .lbl { color: var(--muted); font-weight: 600; }
+.bar-row .val { text-align: right; white-space: nowrap; min-width: 84px; }
+.bar-row .val small { color: var(--muted); font-size: 11.5px; }
+.bar-row .val b { font-size: 14px; }
+.track { position: relative; height: 10px; border-radius: 6px; background: var(--soft); overflow: hidden; }
+.track .band { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--good) 22%, transparent); }
+.track .fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 6px; background: var(--accent); }
+.track .fill.ok { background: var(--good); }
+.track .fill.low { background: var(--warn); }
+.track .fill.high { background: var(--bad); }
+.notes { margin: 12px 0 0; padding-left: 18px; font-size: 13.5px; color: var(--ink); }
+.notes li { margin: 3px 0; }
+
+.browse { margin-top: 22px; }
+.controls { position: sticky; top: 0; z-index: 5; background: var(--bg); padding: 10px 0 8px; margin: 0 -16px; padding-left: 16px; padding-right: 16px; }
+.chips { display: flex; gap: 8px; overflow-x: auto; padding: 8px 2px 2px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.chips::-webkit-scrollbar { display: none; }
+.chip {
+  flex: none; border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 12px;
+  font-size: 13.5px; cursor: pointer; color: var(--ink);
+}
+.chip small { color: var(--muted); margin-left: 4px; }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.chip[aria-pressed="true"] small { color: rgba(255,255,255,.85); }
+.chip.now::after { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--good); margin-left: 6px; vertical-align: middle; }
+.chip[aria-pressed="true"].now::after { background: #fff; }
+
+.period-head { margin: 10px 2px 10px; }
+.period-head h3 { margin: 0; font-size: 18px; }
+.empty { padding: 18px 16px; margin-top: 10px; color: var(--muted); }
+
+article.meal { padding: 14px 14px 12px; margin-top: 12px; scroll-margin-top: 120px; }
+.meal-top { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: start; }
+.rank { width: 30px; height: 30px; border-radius: 50%; background: var(--soft); color: var(--accent-ink); display: grid; place-items: center; font-weight: 800; font-size: 14px; }
+.meal:first-of-type .rank, .rank.r1 { background: var(--accent); color: #fff; }
+.meal-top h4 { margin: 3px 0 0; font-size: 16.5px; line-height: 1.3; overflow-wrap: anywhere; }
+.meal-top .fmt { font-size: 12px; color: var(--muted); text-transform: capitalize; }
+.score { text-align: center; min-width: 46px; }
+.score b { display: block; font-size: 20px; line-height: 1; color: var(--accent-ink); }
+.score span { font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+
+.macros { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 12px 0 4px; }
+.macro { background: var(--soft); border-radius: 10px; padding: 7px 4px; text-align: center; min-width: 0; }
+.macro b { display: block; font-size: 16px; line-height: 1.15; }
+.macro span { font-size: 11px; color: var(--muted); }
+.macro.protein { background: color-mix(in srgb, var(--accent) 16%, var(--card)); }
+.macro.protein b { color: var(--accent-ink); }
+
+ul.items { list-style: none; padding: 0; margin: 10px 0 0; }
+ul.items li { display: grid; grid-template-columns: 30px 1fr auto; gap: 8px; padding: 6px 0; border-top: 1px dashed var(--line); font-size: 14px; align-items: baseline; }
+ul.items li:first-child { border-top: 0; }
+.qty { font-weight: 800; color: var(--accent-ink); }
+.iname { min-width: 0; overflow-wrap: anywhere; }
+.iname small { display: block; color: var(--muted); font-size: 12px; }
+.inums { font-size: 12px; color: var(--muted); text-align: right; white-space: nowrap; }
+.flag { display: inline-block; font-size: 10.5px; padding: 1px 6px; border-radius: 6px; background: var(--warn-soft); color: var(--warn); margin-left: 4px; font-weight: 600; }
+
+.why { margin-top: 12px; display: grid; gap: 4px; }
+.why p { margin: 0; font-size: 13.5px; display: grid; grid-template-columns: 18px 1fr; gap: 6px; }
+.why .ico { width: 16px; height: 16px; border-radius: 50%; display: grid; place-items: center; font-size: 10px; font-weight: 900; margin-top: 2px; }
+.why .pro .ico { background: var(--good-soft); color: var(--good); }
+.why .con .ico { background: var(--warn-soft); color: var(--warn); }
+.compare { font-size: 12.5px; color: var(--muted); margin-top: 8px; font-style: italic; }
+.idea { margin-top: 12px; background: var(--soft); border-radius: 10px; padding: 10px 12px; font-size: 13.5px; }
+.idea b { display: block; font-size: 11.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--accent-ink); margin-bottom: 2px; }
+
+details { margin-top: 10px; }
+details summary { cursor: pointer; font-size: 13px; color: var(--accent-ink); font-weight: 600; list-style: none; }
+details summary::-webkit-details-marker { display: none; }
+details summary::before { content: "+ "; }
+details[open] summary::before { content: "- "; }
+.micro-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px 14px; margin-top: 8px; }
+.micro { font-size: 12.5px; }
+.micro .mh { display: flex; justify-content: space-between; gap: 6px; }
+.micro .mh span { color: var(--muted); }
+.micro .track { height: 6px; margin-top: 3px; }
+.micro em { font-style: normal; font-size: 10.5px; color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 0 3px; margin-left: 4px; }
+.extra-facts { font-size: 12.5px; color: var(--muted); margin-top: 8px; }
+
+footer { margin-top: 28px; font-size: 13px; color: var(--muted); }
+footer p { margin: 8px 0; }
+footer ul { padding-left: 18px; margin: 6px 0; }
+.small { font-size: 12px; }
+@media (max-width: 380px) {
+  .macros { grid-template-columns: repeat(3, 1fr); }
+  .pick { grid-template-columns: 64px 1fr auto; }
+  .bar-row { grid-template-columns: 56px 1fr auto; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .track .fill { transition: width .3s ease; }
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <svg width="34" height="34" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#4B9CD3"/><path d="M36 8 18 36h13l-4 20 19-30H33l3-18z" fill="#fff"/></svg>
+      <div>
+        <h1>HeelFuel</h1>
+        <p>High-protein picks at Top of Lenoir &amp; Chase</p>
+      </div>
+    </div>
+    <div class="meta" id="meta"></div>
+    <div class="seg" id="day-seg" role="group" aria-label="Day"></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="banner"></div>
+  <section class="card day" id="plan" aria-labelledby="plan-h"></section>
+  <section class="browse" aria-labelledby="browse-h">
+    <div class="controls">
+      <div class="sec-head">
+        <h2 id="browse-h">Meals</h2>
+        <div class="seg" id="hall-seg" role="group" aria-label="Dining hall"></div>
+      </div>
+      <div class="chips" id="period-chips" role="group" aria-label="Meal period"></div>
+    </div>
+    <div id="period"></div>
+  </section>
+  <footer id="foot"></footer>
+</main>
+
+<noscript><p class="wrap">HeelFuel needs JavaScript to show the menus. The raw data is at <a href="data/latest.json">data/latest.json</a>.</p></noscript>
+
+<script>
+window.HEELFUEL = /*__HEELFUEL_DATA__*/null;
+</script>
+<script>
+(function () {
+  "use strict";
+  var D = window.HEELFUEL;
+  if (!D || !D.days || !D.days.length) {
+    document.getElementById("period").innerHTML = '<div class="card empty">No data yet. The daily build hasn\'t run.</div>';
+    return;
+  }
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function num(n) { return Math.round(n).toLocaleString("en-US"); }
+  function store(k, v) { try { localStorage.setItem("heelfuel:" + k, v); } catch (e) {} }
+  function load(k) { try { return localStorage.getItem("heelfuel:" + k); } catch (e) { return null; } }
+
+  // Current Eastern time, as YYYY-MM-DD and minutes since midnight.
+  function easternNow() {
+    var parts = {};
+    try {
+      new Intl.DateTimeFormat("en-US", { timeZone: D.timezone || "America/New_York", year: "numeric", month: "2-digit",
+        day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" })
+        .formatToParts(new Date()).forEach(function (p) { parts[p.type] = p.value; });
+      return { date: parts.year + "-" + parts.month + "-" + parts.day, mins: (+parts.hour) * 60 + (+parts.minute) };
+    } catch (e) {
+      var d = new Date();
+      return { date: d.toISOString().slice(0, 10), mins: d.getHours() * 60 + d.getMinutes() };
+    }
+  }
+  // "5pm-8:30pm" -> [1020, 1230]
+  function parseHours(h) {
+    var m = String(h || "").toLowerCase().match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)\s*-\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm)/);
+    if (!m) return null;
+    function t(hh, mm, ap) {
+      hh = +hh % 12; if (ap === "pm") hh += 12;
+      return hh * 60 + (+(mm || 0));
+    }
+    var a = t(m[1], m[2], m[3]), b = t(m[4], m[5], m[6]);
+    if (b <= a) b += 24 * 60;
+    return [a, b];
+  }
+
+  var now = easternNow();
+  var state = { day: 0, variant: load("variant") || "best", hall: load("hall") || D.days[0].halls[0].key, period: null };
+  D.days.forEach(function (d, i) { if (d.date === now.date) state.day = i; });
+  var isToday = function () { return D.days[state.day].date === now.date; };
+
+  function dayObj() { return D.days[state.day]; }
+  function hallObj() {
+    var d = dayObj();
+    return d.halls.filter(function (h) { return h.key === state.hall; })[0] || d.halls[0];
+  }
+  function defaultPeriod(hall) {
+    var ps = hall.periods || [];
+    if (!ps.length) return null;
+    if (!isToday()) return ps[0].key;
+    for (var i = 0; i < ps.length; i++) {
+      var r = parseHours(ps[i].hours);
+      if (r && now.mins < r[1]) return ps[i].key;
+    }
+    return ps[ps.length - 1].key;
+  }
+
+  function renderMeta() {
+    var t = D.targets;
+    document.getElementById("meta").innerHTML =
+      "<span>Updated <b>" + esc(D.generated_label) + "</b></span>" +
+      "<span>Targets <b>" + num(t.protein) + " g protein</b> · <b>" + num(t.kcal_lo) + " to " + num(t.kcal_hi) + " kcal</b></span>";
+    var seg = document.getElementById("day-seg");
+    if (D.days.length < 2) { seg.style.display = "none"; return; }
+    seg.innerHTML = D.days.map(function (d, i) {
+      var name = d.date === now.date ? "Today" : (i === state.day + 1 && isToday() ? "Tomorrow" : d.weekday);
+      return '<button type="button" data-day="' + i + '" aria-pressed="' + (i === state.day) + '">' + esc(name) +
+        ' <span class="small">' + esc(d.label.replace(/^\w+, /, "")) + "</span></button>";
+    }).join("");
+  }
+
+  function renderBanner() {
+    var el = document.getElementById("banner");
+    var newest = D.days[D.days.length - 1].date;
+    if (D.days[0].date > now.date || newest < now.date) {
+      el.innerHTML = '<div class="banner">These menus are for ' + esc(D.days[0].label) +
+        ". Today's update hasn't run yet; check back after 6 AM.</div>";
+    } else el.innerHTML = "";
+  }
+
+  function bar(b) {
+    var max = Math.max(b.hi * 1.15, b.value * 1.05, 1);
+    var bandL = 100 * b.lo / max, bandW = 100 * (b.hi - b.lo) / max;
+    var fillW = Math.min(100, 100 * b.value / max);
+    return '<div class="bar-row"><span class="lbl">' + esc(b.label) + '</span>' +
+      '<div class="track" role="img" aria-label="' + esc(b.label + " " + num(b.value) + " " + b.unit + ", target " + num(b.target)) + '">' +
+      '<div class="band" style="left:' + bandL + "%;width:" + bandW + '%"></div>' +
+      '<div class="fill ' + b.status + '" style="width:' + fillW + '%"></div></div>' +
+      '<span class="val"><b>' + num(b.value) + "</b><small> / " + num(b.target) + " " + esc(b.unit) + "</small></span></div>";
+  }
+
+  function renderPlan() {
+    var d = dayObj(), p = d.plan[state.variant] || d.plan.best;
+    var keys = Object.keys(d.plan);
+    var seg = keys.map(function (k) {
+      var lbl = k === "best" ? "Both halls" : d.plan[k].label.replace(" only", "");
+      return '<button type="button" data-variant="' + k + '" aria-pressed="' + (k === state.variant) + '">' + esc(lbl) + "</button>";
+    }).join("");
+    var html = '<div class="sec-head"><h2 id="plan-h">If you eat the top pick at every meal</h2></div>' +
+      '<div class="seg" style="margin-top:10px" role="group" aria-label="Which halls">' + seg + "</div>";
+    if (!p.picks.length) {
+      html += '<p class="sub" style="margin-top:12px">' + esc(p.notes[0] || "Nothing posted.") + "</p>";
+    } else {
+      html += '<ul class="picks">' + p.picks.map(function (k) {
+        return '<li><button type="button" class="pick" data-jump="' + esc(k.hall + "|" + k.period_key + "|" + k.rank) + '">' +
+          '<span class="slot">' + esc(k.slot_label) + "</span>" +
+          '<span class="what"><b>' + esc(k.title) + "</b><span>" + esc(k.hall_name + " · " + k.period + (k.rank > 1 ? " · pick #" + k.rank : "")) + "</span></span>" +
+          '<span class="nums"><b>' + num(k.protein) + " g</b>" + num(k.kcal) + " kcal</span></button></li>";
+      }).join("") + "</ul>";
+      html += '<div class="bars">' + p.bars.map(bar).join("") + "</div>";
+      html += '<ul class="notes">' + p.notes.map(function (n) { return "<li>" + esc(n) + "</li>"; }).join("") + "</ul>";
+    }
+    document.getElementById("plan").innerHTML = html;
+  }
+
+  function renderHallSeg() {
+    var d = dayObj();
+    document.getElementById("hall-seg").innerHTML = d.halls.map(function (h) {
+      return '<button type="button" data-hall="' + h.key + '" aria-pressed="' + (h.key === hallObj().key) + '">' + esc(h.name) + "</button>";
+    }).join("");
+  }
+
+  function renderChips() {
+    var h = hallObj();
+    var el = document.getElementById("period-chips");
+    if (!h.periods.length) { el.innerHTML = ""; return; }
+    var nowKey = isToday() ? defaultPeriod(h) : null;
+    el.innerHTML = h.periods.map(function (p) {
+      var hrs = p.hours ? "<small>" + esc(p.hours) + "</small>" : "";
+      return '<button type="button" class="chip' + (p.key === nowKey ? " now" : "") + '" data-period="' + esc(p.key) +
+        '" aria-pressed="' + (p.key === state.period) + '">' + esc(p.label) + hrs + "</button>";
+    }).join("");
+    // Center the active chip by scrolling the chip row only, never the page.
+    var active = el.querySelector('[aria-pressed="true"]');
+    if (active) el.scrollLeft = Math.max(0, active.offsetLeft - (el.clientWidth - active.offsetWidth) / 2);
+  }
+
+  function micros(ms) {
+    return '<div class="micro-grid">' + ms.map(function (m) {
+      var w = Math.min(100, m.pct);
+      return '<div class="micro"><div class="mh"><b>' + esc(m.label) + (m.est ? "<em>est.</em>" : "") + "</b><span>" +
+        esc(m.amount + " " + m.unit) + " · " + m.pct + '%</span></div><div class="track"><div class="fill ' + (m.pct >= 30 ? "ok" : "") +
+        '" style="width:' + w + '%"></div></div></div>';
+    }).join("") + '</div><p class="extra-facts">% of a full day\'s needs. "est." values come from the foods themselves, not the dining labels.</p>';
+  }
+
+  function mealCard(c, p) {
+    var t = c.totals;
+    var items = c.items.map(function (it) {
+      var flags = it.flags.map(function (f) { return '<span class="flag">' + esc(f) + "</span>"; }).join("");
+      return '<li><span class="qty">' + it.servings + "x</span>" +
+        '<span class="iname">' + esc(it.name) + flags + "<small>" + esc(it.serving + " each · " + it.station) + "</small></span>" +
+        '<span class="inums">' + num(it.protein) + " g · " + num(it.kcal) + " kcal</span></li>";
+    }).join("");
+    var why = c.pros.map(function (x) { return '<p class="pro"><span class="ico" aria-hidden="true">+</span><span>' + esc(x) + "</span></p>"; }).join("") +
+      c.cons.map(function (x) { return '<p class="con"><span class="ico" aria-hidden="true">!</span><span>' + esc(x) + "</span></p>"; }).join("");
+    return '<article class="card meal" id="' + esc("m-" + state.hall + "-" + p.key + "-" + c.rank) + '">' +
+      '<div class="meal-top"><div class="rank' + (c.rank === 1 ? " r1" : "") + '">' + c.rank + "</div>" +
+      "<div><div class=\"fmt\">" + esc(c.format) + "</div><h4>" + esc(c.title) + "</h4></div>" +
+      '<div class="score"><b>' + c.score + "</b><span>score</span></div></div>" +
+      '<div class="macros">' +
+      '<div class="macro protein"><b>' + num(t.protein) + "</b><span>g protein</span></div>" +
+      '<div class="macro"><b>' + num(t.kcal) + "</b><span>kcal</span></div>" +
+      '<div class="macro"><b>' + num(t.carbs) + "</b><span>g carbs</span></div>" +
+      '<div class="macro"><b>' + num(t.fat) + "</b><span>g fat</span></div>" +
+      '<div class="macro"><b>' + num(t.fiber) + "</b><span>g fiber</span></div></div>" +
+      '<ul class="items">' + items + "</ul>" +
+      '<div class="why" aria-label="Why it ranks">' + why + "</div>" +
+      (c.compare ? '<div class="compare">' + esc(c.compare) + "</div>" : "") +
+      '<div class="idea"><b>Make it tasty</b>' + esc(c.idea) + "</div>" +
+      "<details><summary>Micronutrients and more</summary>" + micros(c.micros) +
+      '<p class="extra-facts">Sodium ' + num(t.sodium) + " mg · saturated fat " + num(t.sat_fat) + " g · added sugar " + num(t.added_sugar) + " g</p></details>" +
+      "</article>";
+  }
+
+  function renderPeriod() {
+    var h = hallObj(), el = document.getElementById("period");
+    if (h.status !== "ok") {
+      var why = h.status === "error" ? "Couldn't load this menu from dining.unc.edu. " : "";
+      el.innerHTML = '<div class="card empty"><b>' + esc(h.name) + "</b>: " + esc(why + (h.message || "No menu posted.")) + "</div>";
+      return;
+    }
+    var p = h.periods.filter(function (x) { return x.key === state.period; })[0];
+    if (!p) { el.innerHTML = '<div class="card empty">' + esc(h.name) + " has nothing posted for this day.</div>"; return; }
+    var head = '<div class="period-head"><h3>' + esc(p.label) + (p.hours ? ' <span class="sub">' + esc(p.hours) + "</span>" : "") + "</h3>" +
+      '<div class="sub">Built for about ' + num(p.target.kcal) + " kcal and " + num(p.target.protein) + " g protein" +
+      (p.counts ? "" : " (an alternate to the main meal, not an extra one)") + "</div></div>";
+    if (!p.combos.length) {
+      el.innerHTML = head + '<div class="card empty">Nothing on this line adds up to a real meal. Check the menu for grab-and-go options.</div>';
+      return;
+    }
+    el.innerHTML = head + p.combos.map(function (c) { return mealCard(c, p); }).join("");
+  }
+
+  function renderFoot() {
+    var d = dayObj(), L = D.links;
+    var ex = (d.excluded || []).map(function (x) {
+      return "<li>" + esc(x.name) + " (" + esc(x.hall + ", " + x.station) + "): " + esc(x.reason) + "</li>";
+    }).join("");
+    document.getElementById("foot").innerHTML =
+      '<p><a href="' + esc(L.research) + '">How the scoring works</a>: protein first, then carb quality, fiber, produce and whole foods, with small evidence-weighted deductions for things like added sugar, sodium and dyes. Nothing gets excluded for a gram of sugar or a single additive.</p>' +
+      "<p>Menus and nutrition labels: <a href=\"" + esc(L.source) + "\">dining.unc.edu</a>. Portions on the line vary, so treat numbers as close estimates. Not medical advice, and allergens aren't filtered: check the label at the station.</p>" +
+      (ex ? "<details><summary>Left out for bad label data (" + (d.excluded.length) + ")</summary><ul>" + ex + "</ul></details>" : "") +
+      '<p class="small"><a href="' + esc(L.repo) + '">Source on GitHub</a> · data: <a href="data/latest.json">latest.json</a></p>';
+  }
+
+  function renderAll() {
+    var h = hallObj();
+    state.hall = h.key;
+    if (!h.periods.some(function (p) { return p.key === state.period; })) state.period = defaultPeriod(h);
+    renderMeta(); renderBanner(); renderPlan(); renderHallSeg(); renderChips(); renderPeriod(); renderFoot();
+  }
+
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest("button") : null;
+    if (!b) return;
+    if (b.dataset.day != null) { state.day = +b.dataset.day; state.period = null; renderAll(); }
+    else if (b.dataset.variant) { state.variant = b.dataset.variant; store("variant", state.variant); renderPlan(); }
+    else if (b.dataset.hall) { state.hall = b.dataset.hall; store("hall", state.hall); state.period = null; renderAll(); }
+    else if (b.dataset.period) { state.period = b.dataset.period; renderChips(); renderPeriod(); }
+    else if (b.dataset.jump) {
+      var parts = b.dataset.jump.split("|");
+      state.hall = parts[0]; state.period = parts[1];
+      renderHallSeg(); renderChips(); renderPeriod();
+      var card = document.getElementById("m-" + parts[0] + "-" + parts[1] + "-" + parts[2]);
+      if (card && card.scrollIntoView) card.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
