@@ -108,7 +108,7 @@ Protein is split to put at least 0.4 g/kg (30 g) in every meal and more in the b
 
 When a day has no late-night period at either hall (Saturdays, for example), the shares are renormalized over the meals that exist, so the three meals get bigger and the daily total still aims at 160 g and 3,000 kcal. Late night gets a larger protein share than calorie share on purpose: 27.5 g of protein every night before sleep increased muscle and strength gains over 12 weeks of training compared with a placebo [Snijders 2015].
 
-Carbs, fat, fiber and produce follow the calorie share. Per-meal "good enough" bands: calories within 10% of target, protein at least 95% of target, carbs 80 to 130%, fat 60 to 140%.
+Carbs, fat, fiber and produce follow the calorie share. Per-meal "good enough" bands: calories within 12% of target (credit then tapers to zero 40% beyond that), protein at least 95% of target, carbs 70 to 135%, fat 60 to 140%. The bands are deliberately loose per meal because the day is what counts: the daily total at the top of the page is where you check 160 g and the calorie range.
 
 ---
 
@@ -119,12 +119,14 @@ Carbs, fat, fiber and produce follow the calorie share. Per-meal "good enough" b
 Every candidate meal (a set of items with servings) gets a score from 0 to 100:
 
 ```
-score = 100 x (FIT + QUALITY + BONUSES - PENALTIES) / 91.25     (clamped to 0-100)
+score = 100 x (FIT + QUALITY + BONUSES - PENALTIES + REALISM) / 95.25     (shown capped at 100)
 ```
 
 - **FIT (max 60)** is how well the meal hits its slot's targets. These are your stated goals, so they aren't discounted by evidence.
 - **QUALITY (max 31.25 effective)** rewards fiber, produce, minimally processed food, micronutrients, protein quality and carb quality.
-- **PENALTIES** are dose-scaled: each one starts at zero, grows with the amount present, and has a cap.
+- **PENALTIES** are dose-scaled: each one starts at zero, grows with the amount present, and has a cap. Additive penalties are per item and grow with servings of that item (the second and third servings count half as much as the first).
+- **REALISM** is not a health factor: it rewards meals you'd actually assemble (a chef's plate from one station, a bowl, a salad) and costs points for running between five lines or pairing yogurt with black beans (section 5.3). It's in the score so the top pick is something you'd eat, not an optimizer's grab bag.
+- 95.25 = 60 + 31.25 + the 4-point meal-format bonus, so a perfect, recognizable meal scores 100. Oily fish, pre-sleep protein and chef pairings can push past 100; the page caps the display at 100, but ranking uses the uncapped number so near-ties still sort sensibly.
 - Every QUALITY, BONUS and PENALTY term is multiplied by an **evidence weight**:
 
 | Grade | Weight | Meaning |
@@ -144,8 +146,8 @@ Effective max = raw points x evidence weight. "Per meal" allowances scale with t
 | # | Factor | Measured as | Dose rule | Raw max | Grade | Effective max |
 |---|---|---|---|---|---|---|
 | F1 | Protein amount | protein vs slot target | full at 95% of target, curve `(ratio / 0.95)^1.6` below; small deduction past 160% | 28 | (target) | 28 |
-| F2 | Calories | kcal vs slot target | full within +/-10%, linear to zero at 30% outside that band | 14 | (target) | 14 |
-| F3 | Carbs | carbs vs slot target | full at 80-130%, curve below, linear taper above | 12 | (target) | 12 |
+| F2 | Calories | kcal vs slot target | full within +/-12%, linear to zero 40% beyond that band | 14 | (target) | 14 |
+| F3 | Carbs | carbs vs slot target | full at 70-135%, curve below, linear taper above | 12 | (target) | 12 |
 | F4 | Fat | fat vs slot target | full at 60-140% | 6 | (target) | 6 |
 | Q1 | Fiber | g vs slot share of 40 g | linear to target | 8 | A | 8.0 |
 | Q2 | Fruit and vegetables | estimated cups vs slot share of 6 cups/day | linear to target | 7 | A | 7.0 |
@@ -159,7 +161,7 @@ Effective max = raw points x evidence weight. "Per meal" allowances scale with t
 | P1 | Added sugar | g above 10 g per meal | 0.35 per g, cap 10 | 10 | A | 10.0 |
 | P2 | Sodium | mg above the meal's share of 3,000 mg (+200 mg grace) | 1 per 200 mg, cap 8 | 8 | B | 5.2 |
 | P3 | Saturated fat | g above 10% of the meal's calories | 0.3 per g, cap 5 | 5 | B | 3.25 |
-| P4 | Trans fat | label trans fat, plus partially hydrogenated oil in ingredients | 3 per g, +2 for PHO, cap 8 | 8 | A | 8.0 |
+| P4 | Trans fat | label trans fat from industrial sources (partially hydrogenated, hydrogenated or interesterified oils, shortening); dairy and meat trans fat counts at 10% | 3 per g, +2 for PHO, cap 8 | 8 | A | 8.0 |
 | P5 | Processed meat | estimated grams of cured/processed meat | 3.5 per 50 g, cap 7 | 7 | B+ | 5.6 |
 | P6 | Deep-fried food | share of calories from fried items | 5 x share | 5 | B | 3.25 |
 | P7 | Synthetic dyes | distinct certified dyes (Red 40, Yellow 5, Yellow 6, Blue 1, Blue 2, Green 3, "artificial color") | 3 each, cap 9 | 9 | C | 1.05 each, 3.15 cap |
@@ -172,7 +174,11 @@ Effective max = raw points x evidence weight. "Per meal" allowances scale with t
 | P14 | Phosphate additives | items with added phosphates | 0.5 each, cap 2 | 2 | D | 0.3 |
 | P15 | Cosmetic colorants | caramel color | 1 per item, cap 2 | 2 | D | 0.3 |
 | P16 | "Bloat" sodium spike | mg above 1,500 in one sitting | 1 per 300 mg, cap 3 | 3 | D | 0.45 |
-| R1 | Realism | stations visited beyond 3 | 1.5 each | - | (practical) | - |
+| R1 | Recognizable meal | the items add up to a plate, bowl, salad, sandwich, pasta, pizza, breakfast plate or yogurt bowl | on/off | +4 | (practical) | +4 |
+| R2 | Chef pairing | the carb, and separately the vegetable, come from the main protein's own station | per part | +2 each | (practical) | +4 |
+| R3 | Extra stations | stations beyond one and a half (salad bar, hummus bar, fruit and drinks count half; extras count half) | per station | -2.5 each | (practical) | - |
+| R4 | Clashes | unrelated starches (-1.5), proteins from two hot lines (-1.5), tofu with meat (-1.5), a yogurt or oatmeal base with beans, rice, meat or raw veg (-8, effectively ruled out) | per clash | - | (practical) | - |
+| R5 | Simplicity | more than four foods | -0.5 each | - | (practical) | - |
 
 The sections below justify each row.
 
@@ -218,13 +224,14 @@ WHO recommends under 10% of energy from free sugars, ideally under 5% [WHO 2015]
 ### 3.10 Saturated fat and trans fat (P3, P4)
 
 - Saturated fat (grade B): cutting it reduced combined cardiovascular events by 17% in long-term RCTs (moderate-quality evidence), with bigger cholesterol drops giving bigger benefits [Hooper 2020]. Gym culture is split on this; the penalty only applies above 10% of the meal's calories and caps at 3.25.
-- Trans fat (grade A): artificial trans fat is the one fat with no safe intake, and partially hydrogenated oils are still in a few products on the line (chocolate sprinkles, Froot Loops, coffee creamers). Label trans fat costs 3 points per gram; a PHO ingredient costs 2 more.
+- Trans fat (grade A): artificial trans fat is the one fat with no safe intake, and partially hydrogenated oils are still in a few products on the line (chocolate sprinkles, Froot Loops, coffee creamers). Industrial label trans fat costs 3 points per gram; a PHO ingredient costs 2 more. Trans fat that comes from cheese, milk or beef (vaccenic acid) is a different molecule and a dose story, not a no-safe-dose story, so it counts at a tenth: the 1 g of trans fat on Cheddar-Chive Mashed Potatoes is from the cheddar and costs about 0.3 points, not 3.
 
 ### 3.11 Ultra-processing (Q3): grade B+
 
 - The strongest single piece of evidence: in an inpatient crossover RCT (two weeks on each diet), people ate about 500 kcal/day more on an ultra-processed diet whose offered meals were matched to the unprocessed diet for calories, energy density, macros, sugar, sodium and fiber, and gained 0.9 kg [Hall 2019]. A 2025 8-week crossover RCT found double the weight loss on minimally processed vs ultra-processed diets that both followed healthy guidelines [Dicken 2025]. An umbrella review found UPF exposure associated with 32 adverse outcomes, with convincing evidence for cardiovascular mortality and type 2 diabetes [Lane 2024].
 - Relevance for a lifter in a surplus: UPF makes it easier to overshoot, so the "slight surplus" turns into fat gain.
-- How it's measured: NOVA defines ultra-processed foods by ingredients "of no or rare culinary use" (flavors, flavor enhancers, colors, emulsifiers, non-sugar sweeteners, thickeners, glucose syrups, hydrogenated oils, protein isolates) [Monteiro 2019]. Each item gets a 0 to 1 processing score from weighted marker counts in its ingredient text. "Natural flavor" and simple gums count half, because a seasoning blend with natural flavor on grilled chicken doesn't make the chicken ultra-processed; three or more full markers is fully ultra-processed. Q3 is the calorie-weighted share of the meal that is not ultra-processed.
+- How it's measured: NOVA defines ultra-processed foods by ingredients "of no or rare culinary use" (flavors, flavor enhancers, colors, emulsifiers, non-sugar sweeteners, thickeners, glucose syrups, hydrogenated oils, protein isolates) [Monteiro 2019]. Each item gets a 0 to 1 processing score from weighted marker counts in its ingredient text. "Natural flavor" and simple gums count half; three or more full markers is fully ultra-processed. Q3 is the calorie-weighted share of the meal that is not ultra-processed.
+- Scratch-cooked dishes are disaggregated the way NOVA studies handle mixed dishes. UNC's recipes list their components in descending order by weight, each with its own sub-ingredients ("CANNED BEAN BLACK [...], WATER, TOMATO, ..., BASE VEGETABLE [maltodextrin, hydrolyzed corn protein, yeast extract, ...]"). Each component is scored on its own markers and weighted by its position (weights 1, 0.6, 0.36... normalized), so a flavor base that is 2% of a pot of black beans makes the dish about 2% ultra-processed, not 100%. A single purchased product (cottage cheese with carrageenan and mono- and diglycerides; a pancake mix) is scored on its own list, where those additives mean exactly what NOVA says they mean.
 
 ### 3.12 Synthetic dyes (P7, P8): grade C
 
@@ -273,11 +280,24 @@ EPA and DHA from oily fish partly inhibit several inflammatory pathways [Calder 
 
 ## 4. Holistic, not absolutist
 
-1. **Nothing is excluded for an additive or a gram of sugar.** The only items left out of recommendations are (a) rows whose nutrition data is implausible (section 1.4), and (b) things that aren't meal components: condiments and sauces, desserts, candy and ice cream toppings, soda and juice. Cereal is only considered at breakfast.
-2. **Penalties scale with dose.** 1 g of added sugar costs 0; 25 g costs 5.25. 1,200 mg of sodium at lunch costs a few tenths; 2,400 mg costs about 4.
-3. **Penalties scale with evidence.** One synthetic dye costs about 1.05 raw points (1.2 on the 100-point scale). Missing 40% of the protein target costs about 15. So "has Yellow 5 but best protein option" wins, as it should.
+1. **Nothing is excluded for an additive or a gram of sugar.** The only items left out of recommendations are (a) rows whose nutrition data is implausible (section 5.4), and (b) things that aren't meal components: condiments and sauces, desserts, candy and ice cream toppings, soda and juice. Cereal is only considered at breakfast.
+2. **Penalties scale with dose.** 1 g of added sugar costs 0, and so does 9 g; 25 g costs 5.25 raw points. 1,200 mg of sodium at lunch costs almost nothing; 2,400 mg costs about 4.
+3. **Penalties scale with evidence.** One synthetic dye costs 1.05 raw points (1.1 on the 100-point scale). Missing 40% of the protein target costs about 15. So "has Yellow 5 but best protein option" wins, as it should.
 4. **Caps stop any one flaw from dominating.** Even the strongest penalty (added sugar) is capped at 10 points.
-5. **The page says what cost points.** Every recommendation lists its tradeoffs ("Sodium 1,640 mg, about half a day's allowance", "Yellow 5 + Blue 1 from the Spinach Wrap") so you can make your own call.
+5. **The page says what cost points.** Every recommendation lists its tradeoffs ("Sodium 1,690 mg, 73% of the 2,300 mg daily reference", "Yellow 5 + Blue 1 in Spinach Wrap") so you can make your own call.
+
+### 4.1 Worked examples (real menus, Monday 2026-09-28)
+
+| Meal | kcal | Protein | Notable | Score |
+|---|---|---|---|---|
+| Chase lunch, Simply Prepared: 2x Chicken Shawarma, 3x Saffron Rice, 2x Roasted Cauliflower, 2x Green Beans, skim milk | 880 | 72 g | Fit 60/60, quality 29.4/31.25, chef plate +8, dairy nudge -0.28 | 100 (102 uncapped) |
+| Lenoir lunch: 2x Halal Honey BBQ Chicken, 2x Cheddar-Chive Mashed Potatoes, 2x Sauteed Kale & Brussels Sprouts | 940 | 78 g | 24 g added sugar from the BBQ sauce: -4.9. Still a strong pick, flagged on the page | 93 |
+| Lenoir dinner: 2x Cajun Chicken, 2x Potato Hash, 2x Sauteed Spinach | 900 | 64 g | 2,540 mg sodium: -4.4, plus -0.45 "bloat" | 91 |
+| The shawarma plate with one scoop of rice swapped for the Spinach Wrap | 1,090 | 78 g | Yellow 5, Yellow 6 and Blue 1 (-3.15, the dye cap), CMC and mono- and diglycerides (-1.05), +830 mg sodium, and a second station | 88 |
+| Chase late lunch: Classic Cheeseburger + Shoestring Fries | 830 | 28 g | Protein at half the target, 3,230 mg sodium, fried, 4 g fiber | 46 |
+| Chase lunch: 2 slices IP3 Pepperoni Pizza | 500 | 24 g | Half the protein and calories, processed meat, BHA in the pepperoni | 36 |
+
+The dyed wrap costs a few points, the sugary sauce costs about five, and a meal that simply doesn't deliver protein costs forty. That ordering is the point.
 
 ---
 
@@ -289,32 +309,42 @@ Each item gets one role from its name, station and macros:
 
 | Role | Examples | Used as |
 |---|---|---|
-| protein | grilled chicken, tilapia, tofu, eggs, Greek yogurt, cottage cheese, deli turkey | the meal's anchor, 1 to 2 kinds, up to 2 servings each (3 for small portions under 130 kcal) |
-| carb | rice, potatoes, pasta, oatmeal, bread, wraps, beans, quinoa, cereal (breakfast only) | 0 to 2 kinds, up to 3 servings of small portions |
-| produce | vegetables, salad greens, fruit | 0 to 2 kinds, up to 2 servings each |
+| protein | grilled chicken, tilapia, tofu, eggs, Greek yogurt, cottage cheese, deli turkey | the meal's anchor, 1 to 2 kinds. At lunch and dinner, Greek yogurt and cottage cheese count as a side instead |
+| carb | rice, potatoes, pasta, oatmeal, bread, wraps, beans, quinoa, cereal (breakfast only) | 0 to 2 kinds |
+| produce | vegetables, salad greens, fruit | 0 to 2 kinds, 3 when they come from the protein's own station, plus a fruit |
 | extra | milk, cheese, guacamole, hummus, nuts and seeds, a pasta sauce | 0 to 1 |
-| mixed | burgers, sandwiches, pizza, pasta bakes, burrito bowls | anchor if 15 g+ protein, otherwise a carb |
-| excluded | condiments, desserts, candy, soda/juice, flagged data | never recommended; condiments come back as flavor suggestions |
+| mixed | burgers, sandwiches, pizza, pasta bakes, burrito bowls | anchor if it brings real protein, otherwise a carb |
+| excluded | condiments, desserts, candy, snack chips, soda/juice, flagged data | never recommended; condiments come back as flavor suggestions |
+
+Portion caps: protein 2 servings (3 for lean portions of 130 kcal or less, 1 for a 450 kcal+ entree or a sandwich); carbs 2 (3 for small scoops of 110 kcal or less, 2 for bread and beans, 1 for a cup or more of beans); vegetables 2 (1 for raw toppings and for servings of 1.5 cups or more); extras 1.
 
 ### 5.2 Search
 
-For each hall and period, the optimizer keeps the most promising 10 proteins, 8 carbs, 8 produce items and 6 extras (ranked by quality-weighted protein, carb quality or nutrient density), then builds meals in stages: every protein core (1 or 2 proteins with servings), then the best carb additions for each core, then produce, then an optional extra, scoring the full meal at every stage and keeping a beam of the best partial meals. That's about 50,000 meal evaluations per period. The top three are picked with a diversity rule: each must have a different main protein when possible, so you get three real alternatives instead of one meal with three vegetable swaps.
+For each hall and period the optimizer builds a pool of the 10 most protein-dense proteins plus the 4 biggest, 8 carbs, 8 produce items (including 2 fruits) and 6 extras. Each protein also brings along the carbs and vegetables from its own station, so a chef's plate (shawarma, saffron rice, roasted cauliflower) is always reachable even when a salad-bar item looks better on paper. Meals are built in stages: every protein core (one or two proteins with servings), then carb options, then produce options, then an optional extra. After each stage it keeps the best 5 (then 3) partial meals per core plus that core's 2 best own-station pairings. That's 20,000 to 60,000 full meal scores per period, 1 to 5 seconds. The top three must have different main proteins and mostly different plates, so you get three real alternatives instead of one meal with three vegetable swaps.
 
-### 5.3 Realism constraints
+### 5.3 Realism rules
 
-At most 5 foods (plus one extra), at most 3 stations, no bread with an item that's already a sandwich or burger, cereal only at breakfast, and serving caps per role. The "make it tasty" idea adds a low-calorie flavor from what's actually on the line that day (salsa, pico, hot sauce, mustard, lemon, marinara...) and says what it adds.
+Hard rules: at most 5 foods plus one extra; breakfast foods (cereal, oatmeal, grits, waffles, pancakes, French toast, granola, biscuits) only at breakfast and late night; no bread next to something that's already a sandwich or burger, and only one bread; one soup; pasta sauce only with pasta; never the same base food twice (two black-bean dishes or two diced chickens is one food, not variety).
+
+Scored rules (R1 to R5 in the table): +4 when the meal is a recognizable format, +2 for each part that comes from the main protein's own station, -2.5 per extra hot station (the salad bar, fruit and drinks count half), -1.5 for unrelated starches, proteins from two hot lines or tofu next to meat, -8 for a yogurt or oatmeal base next to beans, rice, meat or raw vegetables, and -0.5 per food beyond four.
 
 ### 5.4 Data plausibility rules
 
-An item is flagged and excluded when any of these hold:
+An item is flagged, excluded, and listed at the bottom of the page when any of these hold:
 
 - More than 1,500 kcal in one serving.
 - More than 130 kcal per tablespoon (pure oil is about 120).
 - A cheese slice over 400 kcal.
 - Stated calories and 4P + 4C + 9F disagree by more than 50% (for items over 60 kcal).
 - Protein supplies more than 110% of the stated calories.
-- A non-starchy vegetable over 250 kcal per cup.
-- Zero calories on something that isn't a vegetable, condiment or drink.
+- A non-starchy vegetable with more than 30 g carbs or 500 kcal per cup (catches "Baby Carrots, ½ cup: 170 kcal").
+- Zero calories on bread, pasta, rice or a protein.
+
+Label fields that contradict each other are clamped rather than excluded: saturated or trans fat above total fat, fiber above total carbs, added sugar above total carbs ("Roasted Harissa Carrots: 0 g fat, 27 g saturated fat" becomes 0 g). When the added-sugar row is missing, added sugar is estimated from the ingredient list (section 3.8) and the page says it's an estimate.
+
+### 5.5 Flavor ideas
+
+The "make it tasty" line only suggests condiments actually on the line that period, with 45 kcal or less, 4 g added sugar or less, and no dyes, matched to the meal: pico, salsa verde or guacamole for bowls, tzatziki for Mediterranean plates, sriracha for tofu, vinegar-based dressing for salads, mustard instead of mayo for sandwiches, hot sauce or salsa for eggs.
 
 ---
 
