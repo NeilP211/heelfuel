@@ -54,3 +54,26 @@ def test_late_night_is_snack_sized(foods_for):
 
 def test_empty_line_returns_nothing():
     assert search([], slot_targets(ALL)["lunch"]) == []
+
+
+def test_main_dish_is_not_the_side_yogurt(food):
+    shawarma = food("Chicken Shawarma", "Simply Prepared")
+    yogurt = food("Plain Greek Yogurt", "Salad Bar")
+    assert main_protein(((shawarma, 1), (yogurt, 2))) is shawarma
+    assert main_protein(((yogurt, 2),)) is yogurt
+
+
+def test_breakfast_plate_needs_a_breakfast_side(food):
+    eggs = food("Scrambled Eggs")
+    oats = food("Old Fashioned Oatmeal")
+    beans = food("Southwest Black Beans")
+    assert meal_format(((eggs, 2), (oats, 2)), "breakfast") == "breakfast plate"
+    assert meal_format(((eggs, 2), (beans, 1)), "breakfast") != "breakfast plate"
+
+
+def test_titles_in_a_period_are_distinct(foods_for):
+    from heelfuel.explain import title_for
+    for label, slot in (("Breakfast", "breakfast"), ("Lunch", "lunch")):
+        combos = search(foods_for(label), slot_targets(ALL)[slot])
+        titles = [title_for(c, slot) for c in combos]
+        assert len(set(titles)) == len(titles), titles

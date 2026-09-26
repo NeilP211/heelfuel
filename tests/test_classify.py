@@ -101,3 +101,16 @@ def test_portion_caps(food):
     assert food("Chicken Shawarma").max_servings == 2
     assert food("Classic Cheeseburger", "The Griddle").max_servings == 1
     assert food("Saffron Rice").max_servings == 3
+
+
+def test_only_industrial_trans_fat_is_called_out(food):
+    from heelfuel.explain import pros_cons
+    from heelfuel.optimize import Combo
+    from heelfuel.score import item_vec, slot_targets, vec_sum
+    mash = food("Cheddar-Chive Mashed Potatoes")
+    chicken = food("Chicken Shawarma", "Simply Prepared")
+    items = ((chicken, 2), (mash, 2))
+    combo = Combo(items=items, vec=vec_sum(item_vec(f, s) for f, s in items), stations=frozenset())
+    _, cons = pros_cons(combo, slot_targets({"lunch", "dinner"})["lunch"], "lunch")
+    assert not any("trans fat" in c.lower() for c in cons)
+    assert not mash.industrial_trans and food("Froot Loops®", "Cereal").industrial_trans

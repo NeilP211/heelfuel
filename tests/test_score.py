@@ -96,3 +96,11 @@ def test_item_vec_dose_factor_for_additives(food):
 def test_vec_sum_matches_pairwise_add(food):
     a, b = item_vec(food("Chicken Shawarma"), 2), item_vec(food("Saffron Rice"), 3)
     assert vec_sum([a, b]) == vec_add(a, b)
+
+
+def test_protein_past_the_soft_cap_costs_a_little():
+    t = slot_targets(ALL)["lunch"]
+    on, _ = _good_lunch(protein=t.protein * 1.1, pq_protein=t.protein * 1.1)
+    way_over, _ = _good_lunch(protein=t.protein * 1.6, pq_protein=t.protein * 1.6)
+    gap = score_vec(on, t) - score_vec(way_over, t)
+    assert 2 < gap < 7
