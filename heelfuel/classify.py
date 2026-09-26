@@ -247,6 +247,7 @@ class Food:
     suspect: str = ""
     exclude_reason: str = ""
     fixes: tuple = ()
+    industrial_trans: bool = False
     base: str = ""            # main food it is made of ("chicken", "black beans"...), for spotting doubles
     max_servings: int = 1
     allergens: tuple = ()
@@ -725,6 +726,7 @@ def analyze(item: MenuItem, recipe: Recipe) -> Food:
         allergens=tuple(item.allergens), props=tuple(item.props),
     )
     industrial_trans = pho or bool(re.search(r"(?<!non-)(?<!non )hydrogenated|interesterified|shortening", ing))
+    food.industrial_trans = industrial_trans
     trans_scored = n.trans_fat if industrial_trans else n.trans_fat * 0.1
     food.vec = (
         n.kcal, n.protein, n.carbs, n.fat, n.fiber, n.sodium, n.sat_fat, trans_scored, added,

@@ -114,8 +114,9 @@ def score_vec(v: tuple, t: SlotTarget, realism: float = 0.0, explain: bool = Fal
     # ---- FIT: your targets (not evidence-discounted)
     r = protein / t.protein if t.protein else 1.0
     p_pts = C.FIT_POINTS["protein"] * min(1.0, r / 0.95) ** 1.6
-    if r > 1.6:
-        p_pts -= min(6.0, (r - 1.6) * 10.0)
+    if r > C.PROTEIN_SOFT_CAP:
+        # Past the soft cap extra protein is crowding out the carbs that fuel training.
+        p_pts -= min(6.0, (r - C.PROTEIN_SOFT_CAP) * C.PROTEIN_OVER_PTS)
     if kcal < t.kcal_lo:
         d = (t.kcal_lo - kcal) / t.kcal
     elif kcal > t.kcal_hi:

@@ -24,7 +24,9 @@ def _verdict(tot: dict, n_meals: int) -> list[str]:
     d = C.DAILY
     notes = []
     p, k = tot["protein"], tot["kcal"]
-    if p >= d.protein * 0.95:
+    if p > d.protein * 1.25:
+        notes.append(f"{p:.0f} g protein, well past {d.protein:.0f} g. That's fine, but trading a protein scoop for rice, potatoes or fruit adds training carbs.")
+    elif p >= d.protein * 0.95:
         notes.append(f"Protein on target: {p:.0f} g of {d.protein:.0f} g.")
     else:
         gap = d.protein - p

@@ -51,7 +51,8 @@ def title_for(combo: Combo, slot: str) -> str:
         eggs = next((f for f, _ in combo.items if f.role == "protein" and EGGISH.search(f.name)), main)
         es = dict((f.rid, s) for f, s in combo.items).get(eggs.rid, 1)
         elead = {2: "Double ", 3: "Triple "}.get(es, "")
-        carb = next((f for f, _ in combo.items if f.role == "carb"), None)
+        carb = next((f for f, _ in combo.items if f.role == "carb" and ("breakfast_only" in f.tags or "bread" in f.tags
+                                                                     or "potato" in f.tags or f.kind == "starchy_veg")), None)
         return f"{elead}{short_name(eggs.name)} with {short_name(carb.name)}" if carb else f"{elead}{short_name(eggs.name)} plate"
     if fmt == "sandwich":
         if "sandwich" in main.tags:
@@ -349,9 +350,9 @@ def pros_cons(combo: Combo, target: SlotTarget, slot: str, period: str = "") -> 
     if parts["_fried_share"] > 0.05:
         src = _culprit(items, lambda f: f.fried)
         cons.append((lost("fried") + 1, f"{src} is fried"))
-    if lost("trans_fat") > 0.2:
-        src = _culprit(items, lambda f: f.pho) or _culprit(items, lambda f: f.nutrition.trans_fat > 0)
-        cons.append((lost("trans_fat") + 1, f"Industrial trans fat in {src}"))
+    src = _culprit(items, lambda f: f.industrial_trans and (f.pho or f.nutrition.trans_fat > 0))
+    if src:
+        cons.append((lost("trans_fat") + 1, f"Industrial trans fat (partially hydrogenated or interesterified oil) in {src}"))
     if lost("sat_fat") > 0.5:
         cons.append((lost("sat_fat"), f"{v[IX['sat_fat']]:.0f} g saturated fat, over 10% of this meal's calories"))
     dyed = [(f, d) for f, _ in items for d in f.dyes]

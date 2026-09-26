@@ -33,12 +33,7 @@ class Combo:
         return frozenset(f.rid for f, _ in self.items)
 
     def main_protein(self) -> Optional[Food]:
-        best, grams = None, 0.0
-        for f, s in self.items:
-            g = f.nutrition.protein * s
-            if g > grams:
-                best, grams = f, g
-        return best
+        return main_protein(self.items)
 
 
 def item_quality(f: Food) -> float:

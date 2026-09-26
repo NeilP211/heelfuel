@@ -149,6 +149,10 @@ PHOSPHATE_PTS = 0.5
 CARAMEL_PTS = 1.0
 BLOAT_SODIUM_MG = 1500.0
 BLOAT_PTS_PER_300MG = 1.0
+# Protein past 130% of a meal's target costs 1 point per extra 10% (cap 6): more is fine, but not free.
+PROTEIN_SOFT_CAP = 1.3
+PROTEIN_OVER_PTS = 10.0
+
 # Per-meal fit bands: calories within +/-12% get full credit and taper to zero 40% beyond that;
 # carbs get full credit from 70% to 135% of the meal's share.
 KCAL_BAND = 0.12

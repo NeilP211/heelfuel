@@ -46,7 +46,9 @@ def meal_format(items: tuple, slot: str) -> Optional[str]:
     if slot in ("breakfast", "late_night") and main is not None:
         if main.kind == "dairy" and any(f.kind == "fruit" for f in produce):
             return "yogurt bowl"
-        if EGGISH.search(main.name) and carbs:
+        breakfast_sides = [c for c in carbs if "breakfast_only" in c.tags or "bread" in c.tags
+                           or "potato" in c.tags or c.kind == "starchy_veg"]
+        if EGGISH.search(main.name) and (breakfast_sides or (not carbs and any(f.kind == "fruit" for f in produce))):
             return "breakfast plate"
     if "sandwich" in tags:
         return "sandwich"

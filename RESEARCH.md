@@ -145,7 +145,7 @@ Effective max = raw points x evidence weight. "Per meal" allowances scale with t
 
 | # | Factor | Measured as | Dose rule | Raw max | Grade | Effective max |
 |---|---|---|---|---|---|---|
-| F1 | Protein amount | protein vs slot target | full at 95% of target, curve `(ratio / 0.95)^1.6` below; small deduction past 160% | 28 | (target) | 28 |
+| F1 | Protein amount | protein vs slot target | full at 95% of target, curve `(ratio / 0.95)^1.6` below; past 130% of target, 1 point per extra 10% (cap 6) because extra protein crowds out training carbs | 28 | (target) | 28 |
 | F2 | Calories | kcal vs slot target | full within +/-12%, linear to zero 40% beyond that band | 14 | (target) | 14 |
 | F3 | Carbs | carbs vs slot target | full at 70-135%, curve below, linear taper above | 12 | (target) | 12 |
 | F4 | Fat | fat vs slot target | full at 60-140% | 6 | (target) | 6 |
@@ -186,7 +186,7 @@ The sections below justify each row.
 
 - Protein supplementation increases gains in muscle size and strength with training, with no further benefit past about 1.6 g/kg/day on average; the upper confidence bound is 2.2 g/kg [Morton 2018].
 - Per meal: 0.4 g/kg across at least four meals reaches a 1.6 g/kg minimum; up to 0.55 g/kg per meal for 2.2 g/kg [Schoenfeld & Aragon 2018]. For 75 kg that's 30 g minimum, 40+ g for the main meals.
-- There's no hard per-meal ceiling: 100 g produced a bigger and longer response than 25 g [Trommelen 2023]. So F1 only trims points past 160% of target, and only because a huge protein surplus crowds out the carbs you asked for.
+- There's no hard per-meal ceiling: 100 g produced a bigger and longer response than 25 g [Trommelen 2023]. So F1 only trims points past 130% of target (1 point per extra 10%), and only because a big protein surplus crowds out the carbs you asked for. In testing, without that trim the daily plan drifted to 215 g protein and 320 g carbs; with it, about 190 g and 360 g.
 - Pre-sleep protein: 27.5 g of casein nightly for 12 weeks increased muscle and strength gains versus placebo [Snijders 2015]. Cottage cheese, Greek yogurt and milk are the slow-digesting options on the line, hence bonus B2 for the late-night slot.
 
 ### 3.4 Protein quality (Q6): grade B
