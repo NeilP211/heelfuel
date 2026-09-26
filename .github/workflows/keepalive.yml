@@ -1,0 +1,56 @@
+name: Keep scheduled workflows alive
+
+# GitHub turns off every scheduled workflow in a public repo after 60 days with no commits,
+# even when those workflows run and succeed every few hours. This check runs weekly:
+#   1. it turns back on any workflow GitHub already switched off for inactivity, and
+#   2. only when the newest commit is 45 or more days old, it pushes a one-line timestamp commit,
+#      which resets the 60-day clock for every schedule in the repo, this one included.
+# Repos that commit data on their own never get an extra commit.
+
+on:
+  schedule:
+    - cron: '29 14 * * 1'
+  workflow_dispatch:
+    inputs:
+      threshold_days:
+        description: Commit when the newest commit is at least this many days old (0 forces a commit)
+        default: '45'
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Turn back on any workflow GitHub disabled for inactivity
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh api "repos/$REPO/actions/workflows" --paginate \
+            --jq '.workflows[] | select(.state == "disabled_inactivity") | "\(.id) \(.path)"' |
+          while read -r id path; do
+            gh api -X PUT "repos/$REPO/actions/workflows/$id/enable"
+            echo "re-enabled $path"
+          done
+
+      - name: Commit a timestamp if the repo has been quiet for 45 days
+        env:
+          THRESHOLD: ${{ inputs.threshold_days || '45' }}
+        run: |
+          age=$(( ( $(date +%s) - $(git log -1 --format=%ct) ) / 86400 ))
+          echo "newest commit is $age days old"
+          if [ "$age" -lt "$THRESHOLD" ]; then
+            echo "recent enough, nothing to do"
+            exit 0
+          fi
+          date -u +%Y-%m-%dT%H:%M:%SZ > .github/keepalive
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/keepalive
+          git commit -m "Keep scheduled workflows active"
+          git push

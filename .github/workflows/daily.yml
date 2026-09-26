@@ -1,0 +1,81 @@
+name: Build and deploy
+
+on:
+  schedule:
+    # Early morning Eastern (5:17 AM EDT / 4:17 AM EST), then a midday refresh in case the kitchen
+    # edits the menu, and an evening run so "Tomorrow" is fresh when you plan the next day.
+    - cron: '17 9 * * *'
+    - cron: '17 15 * * *'
+    - cron: '17 22 * * *'
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Every source is public, so this workflow needs no secrets.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never let a scheduled run and a push run race each other onto Pages.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install test runner
+        run: pip install pytest
+
+      - name: Unit tests
+        run: python -m pytest -q
+
+      # Nutrition labels rarely change, so keep them between runs instead of re-fetching ~400 a day.
+      - name: Restore recipe cache
+        uses: actions/cache@v4
+        with:
+          path: .cache
+          key: recipes-${{ github.run_id }}
+          restore-keys: recipes-
+
+      - name: Fetch menus and build the site
+        run: python -m heelfuel.build --out site --cache .cache/recipes.json --days 2
+
+      - name: Report what shipped
+        run: |
+          python - <<'PY'
+          import json
+          d = json.load(open("site/data/latest.json"))
+          print("generated", d["generated_at"], "| recipe failures:", d["recipe_failures"])
+          for day in d["days"]:
+              for h in day["halls"]:
+                  n = sum(len(p["combos"]) for p in h["periods"])
+                  print(f'{day["date"]} {h["name"]:14} {h["status"]:8} {len(h["periods"])} periods, {n} picks {h["message"]}')
+              best = day["plan"]["best"]
+              if best["totals"]:
+                  print(f'  day total: {best["totals"]["protein"]:.0f} g protein, {best["totals"]["kcal"]:.0f} kcal')
+          PY
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
