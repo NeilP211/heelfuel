@@ -87,6 +87,7 @@ header.top .wrap { padding-bottom: 0; }
 .seg button[aria-pressed="true"] { background: var(--card); color: var(--ink); box-shadow: var(--shadow); }
 .top .seg button[aria-pressed="true"] { background: #fff; color: var(--navy); }
 
+.linkish { border: 0; background: none; padding: 0; color: var(--accent-ink); font-weight: 600; text-decoration: underline; cursor: pointer; }
 .banner { margin: 14px 0 0; padding: 10px 12px; border-radius: 10px; background: var(--warn-soft); color: var(--ink); font-size: 13.5px; }
 .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); }
 section.day { margin-top: 16px; padding: 16px; }
@@ -303,6 +304,31 @@ window.HEELFUEL = /*__HEELFUEL_DATA__*/null;
     return ps[ps.length - 1].key;
   }
 
+  // Minutes until a hall's last period ends today (negative when it's done for the day).
+  function lastEnd(hall) {
+    var end = -1;
+    (hall.periods || []).forEach(function (p) {
+      var r = parseHours(p.hours);
+      if (r) end = Math.max(end, r[1]);
+    });
+    return end;
+  }
+  function doneToday(hall) { return isToday() && hall.status === "ok" && lastEnd(hall) >= 0 && now.mins >= lastEnd(hall); }
+  function fmtClock(mins) {
+    var h = Math.floor(mins / 60) % 24, m = mins % 60, ap = h >= 12 ? "pm" : "am";
+    h = h % 12 || 12;
+    return h + (m ? ":" + (m < 10 ? "0" : "") + m : "") + ap;
+  }
+
+  // First load: if the remembered hall has finished serving for the day, open one that hasn't.
+  (function () {
+    var d = dayObj(), h = hallObj();
+    if (doneToday(h)) {
+      var open = d.halls.filter(function (x) { return x.status === "ok" && !doneToday(x); })[0];
+      if (open) state.hall = open.key;
+    }
+  })();
+
   function renderMeta() {
     var t = D.targets;
     document.getElementById("meta").innerHTML =
@@ -430,6 +456,13 @@ window.HEELFUEL = /*__HEELFUEL_DATA__*/null;
     }
     var p = h.periods.filter(function (x) { return x.key === state.period; })[0];
     if (!p) { el.innerHTML = '<div class="card empty">' + esc(h.name) + " has nothing posted for this day.</div>"; return; }
+    var note = "";
+    if (doneToday(h)) {
+      var other = dayObj().halls.filter(function (x) { return x.key !== h.key && x.status === "ok" && !doneToday(x); })[0];
+      note = '<div class="banner">' + esc(h.name) + " is done serving for today." +
+        (other ? ' <button type="button" class="linkish" data-hall="' + esc(other.key) + '">' + esc(other.name) +
+          " is open until " + fmtClock(lastEnd(other)) + "</button>" : "") + "</div>";
+    }
     var head = '<div class="period-head"><h3>' + esc(p.label) + (p.hours ? ' <span class="sub">' + esc(p.hours) + "</span>" : "") + "</h3>" +
       '<div class="sub">Built for about ' + num(p.target.kcal) + " kcal and " + num(p.target.protein) + " g protein" +
       (p.counts ? "" : " (an alternate to the main meal, not an extra one)") + "</div>" +
@@ -437,10 +470,10 @@ window.HEELFUEL = /*__HEELFUEL_DATA__*/null;
         " on this line had no nutrition label when this was built, so " + (p.missing_recipes > 1 ? "they weren't" : "it wasn't") + " considered.</div>" : "") +
       "</div>";
     if (!p.combos.length) {
-      el.innerHTML = head + '<div class="card empty">Nothing on this line adds up to a real meal. Check the menu for grab-and-go options.</div>';
+      el.innerHTML = note + head + '<div class="card empty">Nothing on this line adds up to a real meal. Check the menu for grab-and-go options.</div>';
       return;
     }
-    el.innerHTML = head + p.combos.map(function (c) { return mealCard(c, p); }).join("");
+    el.innerHTML = note + head + p.combos.map(function (c) { return mealCard(c, p); }).join("");
   }
 
   function renderFoot() {
