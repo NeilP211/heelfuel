@@ -113,5 +113,20 @@ class RecipeCache:
                     self.recipes[rid] = recipe
                 else:
                     failures[rid] = err or "unknown error"
+        if failures:
+            # The server sheds load under concurrent requests; a slow, one-at-a-time second pass
+            # recovers nearly everything the first pass dropped.
+            log.info("recipes: %d failed on the first pass (e.g. %s); retrying one at a time",
+                     len(failures), next(iter(failures.values()))[:160])
+            for rid in list(failures):
+                time.sleep(config.RETRY_PASS_DELAY_S)
+                rid, recipe, err = one(rid)
+                if recipe is not None:
+                    self.recipes[rid] = recipe
+                    del failures[rid]
+                else:
+                    failures[rid] = err or "unknown error"
         log.info("recipes: %d fetched, %d failed, %d cached", len(todo) - len(failures), len(failures), len(self.recipes))
+        for rid, err in list(failures.items())[:5]:
+            log.warning("recipe %s still failing: %s", rid, err[:200])
         return failures
