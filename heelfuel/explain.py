@@ -270,12 +270,12 @@ def _culprit(items, pred) -> str:
     return _join(names[:2])
 
 
-def pros_cons(combo: Combo, target: SlotTarget, slot: str) -> tuple[list[str], list[str]]:
+def pros_cons(combo: Combo, target: SlotTarget, slot: str, period: str = "") -> tuple[list[str], list[str]]:
     v = combo.vec
     sc, parts = score_vec(v, target, realism_points(combo.items, slot), explain=True)
     kcal, protein, carbs, fat = v[0], v[1], v[2], v[3]
     fiber, sodium = v[IX["fiber"]], v[IX["sodium"]]
-    slot_word = C.SLOT_LABELS.get(slot, slot).lower()
+    slot_word = (period or C.SLOT_LABELS.get(slot, slot)).lower()
     pros: list[tuple[float, str]] = []
     cons: list[tuple[float, str]] = []
     items = combo.items

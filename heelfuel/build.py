@@ -38,15 +38,15 @@ def _item_payload(f, servings: int) -> dict:
         flags.append("processed meat")
     flags += list(f.dyes) + list(f.red_flags)
     return {
-        "name": short_name(f.name), "station": f.station, "servings": servings, "serving": f.serving,
+        "name": short_name(f.name), "station": f.station, "servings": servings, "serving": f.serving.lower(),
         "kcal": round(n.kcal * servings), "protein": round(n.protein * servings),
         "carbs": round(n.carbs * servings), "fat": round(n.fat * servings), "role": f.role, "flags": flags,
     }
 
 
-def _combo_payload(combo, rank: int, target, slot: str, condiments, best=None) -> dict:
+def _combo_payload(combo, rank: int, target, slot: str, condiments, best=None, period: str = "") -> dict:
     v = combo.vec
-    pros, cons = pros_cons(combo, target, slot)
+    pros, cons = pros_cons(combo, target, slot, period)
     return {
         "rank": rank,
         "score": round(min(100.0, combo.score)),
@@ -92,7 +92,7 @@ def process_day(day: str, menus: dict, cache: RecipeCache) -> dict:
                 "target": {"kcal": round(t.kcal), "protein": round(t.protein), "carbs": round(t.carbs), "fat": round(t.fat)},
                 "missing_recipes": missing,
                 "status": "ok" if combos else "no_options",
-                "combos": [_combo_payload(c, i + 1, t, p.slot, condiments, combos[0]) for i, c in enumerate(combos)],
+                "combos": [_combo_payload(c, i + 1, t, p.slot, condiments, combos[0], p.label) for i, c in enumerate(combos)],
             }
             hall_out["periods"].append(period_out)
             plan_periods.append({"hall": hall, "key": p.key, "label": p.label, "slot": p.slot, "counts": p.counts,
