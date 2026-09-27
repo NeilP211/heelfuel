@@ -104,13 +104,53 @@ def test_portion_caps(food):
 
 
 def test_only_industrial_trans_fat_is_called_out(food):
-    from heelfuel.explain import pros_cons
-    from heelfuel.optimize import Combo
-    from heelfuel.score import item_vec, slot_targets, vec_sum
+    from heelfuel.builds import TEMPLATE_BY_KEY, Build
+    from heelfuel.explain import build_payload
+    from heelfuel.score import item_vec, score_meal, target_for, vec_sum
     mash = food("Cheddar-Chive Mashed Potatoes")
     chicken = food("Chicken Shawarma", "Simply Prepared")
-    items = ((chicken, 2), (mash, 2))
-    combo = Combo(items=items, vec=vec_sum(item_vec(f, s) for f, s in items), stations=frozenset())
-    _, cons = pros_cons(combo, slot_targets({"lunch", "dinner"})["lunch"], "lunch")
-    assert not any("trans fat" in c.lower() for c in cons)
-    assert not mash.industrial_trans and food("Froot Loops®", "Cereal").industrial_trans
+    picks = (("protein", chicken, 2), ("starch", mash, 2), ("veg", food("Green Beans"), 1))
+    vec = vec_sum(item_vec(f, s) for _, f, s in picks)
+    b = Build(TEMPLATE_BY_KEY["power_plate"], picks, vec, score_meal(vec, target_for("lunch")))
+    out = build_payload(b, 1, target_for("lunch"))
+    assert not any("trans fat" in c.lower() for c in out["tradeoffs"])
+    assert not mash.industrial_trans and food("Froot Loops\u00ae", "Cereal").industrial_trans
+
+
+def _label(name, serving="1 each", station="X", **n):
+    from heelfuel.classify import analyze
+    from heelfuel.model import MenuItem, Nutrition, Recipe
+    base = dict(kcal=100.0, protein=2.0, carbs=20.0, fat=1.0)
+    base.update(n)
+    return analyze(MenuItem("1", name, station), Recipe("1", name, serving=serving, nutrition=Nutrition(**base)))
+
+
+def test_impossible_iron_is_replaced_with_a_typical_amount():
+    salsa = _label("Salsa", "2 Tbsp", kcal=10, carbs=2, fat=0, protein=0, iron=93)
+    assert salsa.nutrition.iron < 1 and any("93 mg iron" in x for x in salsa.fixes)
+    cereal = _label("Frosted Mini Wheats", "1.45 oz", "Cereal", kcal=140, carbs=34, iron=11.3)
+    assert cereal.nutrition.iron == 11.3  # fortified cereal really has that much
+
+
+def test_vitamin_d_entered_as_iu_is_converted():
+    ham = _label("Sliced Ham", "3 slices", "Deli", kcal=110, protein=16, carbs=2, fat=4, vit_d=13.9)
+    assert ham.nutrition.vit_d < 1
+    salmon = _label("Grilled Salmon", "4 oz", kcal=230, protein=25, carbs=0, fat=14, vit_d=12)
+    assert salmon.nutrition.vit_d == 12
+
+
+def test_fruit_label_with_impossible_calories_is_flagged():
+    apples = _label("Roasted Cinnamon Apples", "\u00bc cup", kcal=560, carbs=133, fat=1.5, protein=4)
+    assert "per cup of fruit" in apples.suspect
+    grapes = _label("Red Grapes", "\u00bd cup", kcal=52, carbs=14, fat=0, protein=0.5)
+    assert not grapes.suspect
+
+
+def test_flavored_oatmeal_is_a_carb_not_fruit():
+    oats = _label("Apple Cinnamon Oatmeal", "8 floz", kcal=160, carbs=30, fat=2.5, protein=5)
+    assert oats.role == "carb" and oats.kind != "fruit"
+
+
+def test_milk_and_yogurt_micros_use_the_real_portion():
+    milk = _label("Skim Milk", "1 cup", "Beverages", kcal=80, protein=8, carbs=12, fat=0)
+    assert milk.est["magnesium"] > 20 and milk.est["vit_a"] > 100

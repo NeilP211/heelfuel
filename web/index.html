@@ -2,52 +2,33 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>HeelFuel</title>
-<meta name="description" content="The best high-protein meals at UNC's Top of Lenoir and Chase dining halls, rebuilt every morning from the posted menus.">
+<meta name="description" content="Athlete meal builds for UNC's Top of Lenoir and Chase: high protein, high micronutrients, minimally processed, rebuilt from the dining hall menus every day.">
 <meta name="theme-color" content="#13294B">
+<meta name="color-scheme" content="light">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #f4f7fb;
-  --card: #ffffff;
-  --ink: #0f1f38;
-  --muted: #5b6b82;
-  --line: #e1e8f0;
-  --soft: #eef4fa;
-  --accent: #4b9cd3;
-  --accent-ink: #1b6ea8;
-  --navy: #13294b;
-  --good: #1f9d63;
-  --good-soft: #e3f5ec;
-  --warn: #c7771a;
-  --warn-soft: #fbf0e1;
-  --bad: #c9423a;
-  --bad-soft: #fbe6e4;
-  --shadow: 0 1px 2px rgba(15, 31, 56, .06), 0 4px 16px rgba(15, 31, 56, .05);
-  color-scheme: light;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0b1424;
-    --card: #121e33;
-    --ink: #e8eef7;
-    --muted: #9aabc3;
-    --line: #22324d;
-    --soft: #172640;
-    --accent: #6fb6e6;
-    --accent-ink: #8cc7ee;
-    --navy: #0b1424;
-    --good: #45c28a;
-    --good-soft: #143528;
-    --warn: #e6a04a;
-    --warn-soft: #3a2a14;
-    --bad: #ef7a72;
-    --bad-soft: #3d1b1a;
-    --shadow: 0 1px 2px rgba(0, 0, 0, .3);
-    color-scheme: dark;
-  }
+  --navy: #13294B;
+  --carolina: #4B9CD3;
+  --green: #5C7B3D;
+  --tab: #F0F2F5;
+  --tab-ink: #6D6D6D;
+  --rule: #C2BAAC;
+  --line: #E4E1DA;
+  --ink: #1F1F1F;
+  --ink-2: #555555;
+  --muted: #6D6D6D;
+  --orange: #F0A456;
+  --orange-ink: #362613;
+  --yellow: #F6DE8D;
+  --bar: #E6E9EE;
+  --bg: #FFFFFF;
+  --soft: #F7F6F3;
 }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
@@ -55,463 +36,689 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
-  font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  font-variant-numeric: tabular-nums;
+  font: 400 16px/1.6 Roboto, system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
   overflow-x: hidden;
 }
-a { color: var(--accent-ink); }
+a { color: var(--navy); }
 button { font: inherit; color: inherit; }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
-.wrap { max-width: 760px; margin: 0 auto; padding: 0 16px calc(40px + env(safe-area-inset-bottom)); }
+.wrap { max-width: 1060px; margin: 0 auto; padding: 0 16px; }
+@media (min-width: 720px) { .wrap { padding: 0 28px; } }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-header.top {
-  background: var(--navy);
-  color: #fff;
-  padding: calc(14px + env(safe-area-inset-top)) 0 18px;
+/* ---------- top strip, like "<- unc.edu" on dining.unc.edu */
+.topbar { background: #fff; }
+.topbar .wrap { display: flex; align-items: center; justify-content: space-between; min-height: 52px; gap: 12px; }
+.back { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; font-size: 17px; color: var(--navy); text-decoration: none; }
+.back svg { width: 20px; height: 20px; }
+.toplinks { display: flex; gap: 16px; font-size: 14px; }
+.toplinks a { color: var(--muted); text-decoration: none; font-weight: 500; }
+.toplinks a:hover, .back:hover { text-decoration: underline; }
+
+/* ---------- navy masthead */
+.masthead { background: var(--navy); color: #fff; padding: 16px 0 22px; }
+.mast-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.logo {
+  display: inline-grid; place-items: center; width: 54px; height: 54px;
+  border: 2px solid #fff; border-radius: 2px; color: #fff; text-decoration: none;
+  font: 700 25px/1 "Roboto Condensed", Roboto, sans-serif; letter-spacing: .5px;
 }
-header.top .wrap { padding-bottom: 0; }
-.brand { display: flex; align-items: center; gap: 10px; }
-.brand svg { flex: none; }
-.brand h1 { margin: 0; font-size: 22px; letter-spacing: -.01em; }
-.brand p { margin: 0; font-size: 13px; color: #b8cbe4; }
-.meta { margin-top: 12px; font-size: 12.5px; color: #b8cbe4; display: flex; flex-wrap: wrap; gap: 4px 12px; }
-.meta b { color: #fff; font-weight: 600; }
-
-.seg { display: inline-flex; background: var(--soft); border-radius: 10px; padding: 3px; gap: 2px; max-width: 100%; }
-.top .seg { background: rgba(255,255,255,.1); margin-top: 14px; }
-.seg button {
-  border: 0; background: transparent; padding: 7px 12px; border-radius: 8px; cursor: pointer;
-  font-size: 14px; font-weight: 600; color: var(--muted); white-space: nowrap;
+.mast-right { display: flex; align-items: center; gap: 16px; }
+.mast-label { font-weight: 700; font-size: 15px; line-height: 1.15; text-align: center; text-transform: uppercase; letter-spacing: .3px; }
+.pill {
+  display: inline-grid; place-items: center; width: 76px; height: 44px; border-radius: 22px;
+  background: #fff; border: 0; cursor: pointer;
 }
-.top .seg button { color: #cfe0f5; }
-.seg button[aria-pressed="true"] { background: var(--card); color: var(--ink); box-shadow: var(--shadow); }
-.top .seg button[aria-pressed="true"] { background: #fff; color: var(--navy); }
-
-.linkish { border: 0; background: none; padding: 0; color: var(--accent-ink); font-weight: 600; text-decoration: underline; cursor: pointer; }
-.banner { margin: 14px 0 0; padding: 10px 12px; border-radius: 10px; background: var(--warn-soft); color: var(--ink); font-size: 13.5px; }
-.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); }
-section.day { margin-top: 16px; padding: 16px; }
-.sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
-h2 { font-size: 17px; margin: 0; letter-spacing: -.01em; }
-.sub { color: var(--muted); font-size: 13px; }
-.picks { list-style: none; margin: 12px 0 0; padding: 0; }
-.picks li { border-top: 1px solid var(--line); }
-.picks li:first-child { border-top: 0; }
-.pick {
-  width: 100%; text-align: left; background: none; border: 0; padding: 10px 0; cursor: pointer;
-  display: grid; grid-template-columns: 78px 1fr auto; gap: 10px; align-items: center;
+.pill svg { width: 24px; height: 24px; }
+.date-row { display: flex; align-items: center; gap: 14px; margin-top: 20px; }
+.date-row > svg { width: 34px; height: 34px; flex: none; }
+.date-select { position: relative; display: inline-block; min-width: 210px; border-bottom: 2px solid #fff; }
+.date-select select {
+  appearance: none; -webkit-appearance: none; background: transparent; border: 0; color: #fff;
+  font: 700 17px/1.2 Roboto, sans-serif; padding: 6px 30px 8px 2px; width: 100%; cursor: pointer;
 }
-.pick .slot { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
-.pick .what { min-width: 0; }
-.pick .what b { display: block; font-size: 14.5px; overflow-wrap: anywhere; }
-.pick .what span { font-size: 12.5px; color: var(--muted); }
-.pick .nums { text-align: right; font-size: 13px; white-space: nowrap; }
-.pick .nums b { display: block; font-size: 15px; }
+.date-select select option { color: #000; }
+.date-select svg { position: absolute; right: 4px; top: 50%; width: 16px; height: 16px; transform: translateY(-50%); pointer-events: none; }
+.date-select select:focus-visible { outline: 2px solid var(--carolina); outline-offset: 2px; }
 
-.bars { margin-top: 14px; display: grid; gap: 10px; }
-.bar-row { display: grid; grid-template-columns: 64px 1fr auto; gap: 10px; align-items: center; font-size: 13px; }
-.bar-row .lbl { color: var(--muted); font-weight: 600; }
-.bar-row .val { text-align: right; white-space: nowrap; min-width: 84px; }
-.bar-row .val small { color: var(--muted); font-size: 11.5px; }
-.bar-row .val b { font-size: 14px; }
-.track { position: relative; height: 10px; border-radius: 6px; background: var(--soft); overflow: hidden; }
-.track .band { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--good) 22%, transparent); }
-.track .fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 6px; background: var(--accent); }
-.track .fill.ok { background: var(--good); }
-.track .fill.low { background: var(--warn); }
-.track .fill.high { background: var(--bad); }
-.notes { margin: 12px 0 0; padding-left: 18px; font-size: 13.5px; color: var(--ink); }
-.notes li { margin: 3px 0; }
+/* ---------- hall switcher and heading */
+.hall-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 22px; }
+.hall-tab {
+  background: var(--tab); color: var(--tab-ink); border: 0; cursor: pointer;
+  font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: .3px; padding: 13px 8px;
+}
+.hall-tab[aria-selected="true"] { background: var(--navy); color: #fff; }
+.hall-tab small { display: block; font-weight: 500; font-size: 11.5px; letter-spacing: 0; text-transform: none; opacity: .8; }
+h1 { font-weight: 300; font-size: 40px; line-height: 1.15; color: var(--navy); margin: 30px 0 2px; }
+.building { font-size: 24px; color: var(--navy); margin: 0; line-height: 1.3; }
+@media (min-width: 720px) { h1 { font-size: 48px; } .building { font-size: 26px; } }
 
-.browse { margin-top: 22px; }
-.controls { position: sticky; top: 0; z-index: 5; background: var(--bg); padding: 10px 0 8px; margin: 0 -16px; padding-left: 16px; padding-right: 16px; }
-.chips { display: flex; gap: 8px; overflow-x: auto; padding: 8px 2px 2px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
-.chips::-webkit-scrollbar { display: none; }
+/* "Dietary Filter"-style accordion */
+.acc { margin-top: 26px; border-bottom: 2px solid var(--line); }
+.acc > button {
+  width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: none; border: 0; padding: 6px 0 12px; cursor: pointer; text-align: left;
+  font-size: 26px; font-weight: 400; color: var(--navy); line-height: 1.25;
+}
+.acc > button svg { width: 22px; height: 22px; flex: none; transition: transform .2s; }
+.acc > button[aria-expanded="true"] svg { transform: rotate(180deg); }
+.acc-body { padding: 0 0 18px; font-size: 15.5px; color: var(--ink-2); }
+.acc-body p { margin: 0 0 10px; }
+.acc-body b { color: var(--ink); }
+.intro { font-size: 17px; line-height: 1.75; margin: 20px 0 0; }
+
+/* ---------- period tabs, the green/gray grid from the UNC menu page */
+.period-tabs { display: grid; grid-template-columns: repeat(var(--cols-m, 3), 1fr); gap: 8px; margin-top: 30px; }
+@media (min-width: 720px) { .period-tabs { grid-template-columns: repeat(var(--cols-d, 4), 1fr); } }
+.period-tab {
+  background: var(--tab); color: var(--tab-ink); border: 0; cursor: pointer; min-height: 66px;
+  font-weight: 600; font-size: 13.5px; line-height: 1.35; text-transform: uppercase; letter-spacing: .2px; padding: 10px 6px;
+}
+.period-tab span { display: block; font-weight: 500; }
+.period-tab[aria-selected="true"] { background: var(--green); color: #fff; }
+.period-tab:focus-visible, .hall-tab:focus-visible, .toggle:focus-visible, .item-link:focus-visible, .link-btn:focus-visible, .pill:focus-visible {
+  outline: 3px solid var(--carolina); outline-offset: 2px;
+}
+
+.period-head { margin-top: 26px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+.period-head h2 { margin: 0; font-weight: 300; font-size: 30px; color: var(--navy); line-height: 1.2; }
+.status { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; padding: 3px 9px; border-radius: 12px; }
+.status.now { background: var(--green); color: #fff; }
+.status.later { background: var(--tab); color: var(--tab-ink); }
+.target { width: 100%; margin: 2px 0 0; color: var(--ink-2); font-size: 15px; }
+.note { background: var(--soft); border-left: 4px solid var(--rule); padding: 12px 14px; margin: 20px 0; font-size: 15px; color: var(--ink-2); }
+
+/* ---------- a build = a station block */
+.build { margin-top: 38px; }
+.build-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 1px solid var(--rule); padding-bottom: 12px; }
+.build-title { margin: 0; display: flex; align-items: center; gap: 12px; color: var(--carolina); font-weight: 700; font-size: 19px; line-height: 1.25; text-transform: uppercase; letter-spacing: .2px; }
+.rank {
+  flex: none; display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 50%;
+  background: var(--orange); color: var(--orange-ink); font-size: 15px; font-weight: 700;
+}
+.toggle { flex: none; width: 40px; height: 40px; border: 0; background: none; cursor: pointer; position: relative; }
+.toggle::before, .toggle::after { content: ""; position: absolute; left: 50%; top: 50%; width: 16px; height: 4px; background: #555; transform: translate(-50%, -50%); }
+.toggle::after { transform: translate(-50%, -50%) rotate(90deg); opacity: 0; transition: opacity .15s; }
+.toggle[aria-expanded="false"]::after { opacity: 1; }
+.build-body { padding-top: 16px; }
+.build[data-open="false"] .build-body { display: none; }
+.blurb { margin: 0 0 16px; color: var(--ink-2); font-size: 16px; }
+
+.score { display: grid; grid-template-columns: auto 1fr; gap: 6px 18px; align-items: center; max-width: 620px; }
+.score-num { font-weight: 300; font-size: 46px; line-height: 1; color: var(--navy); }
+.score-num small { display: block; font-size: 11px; font-weight: 700; letter-spacing: .5px; color: var(--muted); text-transform: uppercase; margin-top: 6px; }
+.bars { display: grid; gap: 7px; }
+.bar-row { display: grid; grid-template-columns: 62px 1fr 42px; align-items: center; gap: 10px; font-size: 11.5px; font-weight: 700; color: var(--muted); letter-spacing: .4px; }
+.bar { height: 7px; background: var(--bar); border-radius: 4px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--carolina); border-radius: 4px; }
+.bar-row b { text-align: right; color: var(--ink); font-weight: 500; letter-spacing: 0; font-size: 12.5px; }
+
+.macros { display: grid; grid-template-columns: repeat(5, 1fr); margin: 20px 0 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.macro { padding: 10px 4px; text-align: center; }
+.macro + .macro { border-left: 1px solid var(--line); }
+.macro .v { display: block; font-size: 20px; font-weight: 500; color: var(--navy); line-height: 1.2; white-space: nowrap; }
+.macro .v small { font-size: 12px; font-weight: 500; }
+.macro .k { display: block; font-size: 10.5px; font-weight: 700; color: var(--muted); letter-spacing: .5px; text-transform: uppercase; margin-top: 2px; }
+.macro .dv { display: block; font-size: 11.5px; color: var(--ink-2); }
+@media (min-width: 720px) { .macro .v { font-size: 24px; } }
+
+.label { margin: 22px 0 8px; font-size: 12.5px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: var(--navy); }
+.label em { font-style: normal; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--muted); font-size: 12.5px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .chip {
-  flex: none; border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 6px 12px;
-  font-size: 13.5px; cursor: pointer; color: var(--ink);
+  --p: 0%;
+  display: inline-flex; align-items: baseline; gap: 6px; padding: 6px 11px; border-radius: 16px; font-size: 13.5px; color: var(--ink);
+  background: linear-gradient(90deg, rgba(75, 156, 211, .30) var(--p), var(--tab) var(--p));
 }
-.chip small { color: var(--muted); margin-left: 4px; }
-.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
-.chip[aria-pressed="true"] small { color: rgba(255,255,255,.85); }
-.chip.now::after { content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--good); margin-left: 6px; vertical-align: middle; }
-.chip[aria-pressed="true"].now::after { background: #fff; }
+.chip b { font-weight: 700; color: var(--navy); }
 
-.period-head { margin: 10px 2px 10px; }
-.period-head h3 { margin: 0; font-size: 18px; }
-.empty { padding: 18px 16px; margin-top: 10px; color: var(--muted); }
-
-article.meal { padding: 14px 14px 12px; margin-top: 12px; scroll-margin-top: 120px; }
-.meal-top { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: start; }
-.rank { width: 30px; height: 30px; border-radius: 50%; background: var(--soft); color: var(--accent-ink); display: grid; place-items: center; font-weight: 800; font-size: 14px; }
-.meal:first-of-type .rank, .rank.r1 { background: var(--accent); color: #fff; }
-.meal-top h4 { margin: 3px 0 0; font-size: 16.5px; line-height: 1.3; overflow-wrap: anywhere; }
-.meal-top .fmt { font-size: 12px; color: var(--muted); text-transform: capitalize; }
-.score { text-align: center; min-width: 46px; }
-.score b { display: block; font-size: 20px; line-height: 1; color: var(--accent-ink); }
-.score span { font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
-
-.macros { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 12px 0 4px; }
-.macro { background: var(--soft); border-radius: 10px; padding: 7px 4px; text-align: center; min-width: 0; }
-.macro b { display: block; font-size: 16px; line-height: 1.15; }
-.macro span { font-size: 11px; color: var(--muted); }
-.macro.protein { background: color-mix(in srgb, var(--accent) 16%, var(--card)); }
-.macro.protein b { color: var(--accent-ink); }
-
-ul.items { list-style: none; padding: 0; margin: 10px 0 0; }
-ul.items li { display: grid; grid-template-columns: 30px 1fr auto; gap: 8px; padding: 6px 0; border-top: 1px dashed var(--line); font-size: 14px; align-items: baseline; }
-ul.items li:first-child { border-top: 0; }
-.qty { font-weight: 800; color: var(--accent-ink); }
-.iname { min-width: 0; overflow-wrap: anywhere; }
-.iname small { display: block; color: var(--muted); font-size: 12px; }
-.inums { font-size: 12px; color: var(--muted); text-align: right; white-space: nowrap; }
-.flag { display: inline-block; font-size: 10.5px; padding: 1px 6px; border-radius: 6px; background: var(--warn-soft); color: var(--warn); margin-left: 4px; font-weight: 600; }
-
-.why { margin-top: 12px; display: grid; gap: 4px; }
-.why p { margin: 0; font-size: 13.5px; display: grid; grid-template-columns: 18px 1fr; gap: 6px; }
-.why .ico { width: 16px; height: 16px; border-radius: 50%; display: grid; place-items: center; font-size: 10px; font-weight: 900; margin-top: 2px; }
-.why .pro .ico { background: var(--good-soft); color: var(--good); }
-.why .con .ico { background: var(--warn-soft); color: var(--warn); }
-.compare { font-size: 12.5px; color: var(--muted); margin-top: 8px; font-style: italic; }
-.idea { margin-top: 12px; background: var(--soft); border-radius: 10px; padding: 10px 12px; font-size: 13.5px; }
-.idea b { display: block; font-size: 11.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--accent-ink); margin-bottom: 2px; }
-
-details { margin-top: 10px; }
-details summary { cursor: pointer; font-size: 13px; color: var(--accent-ink); font-weight: 600; list-style: none; }
-details summary::-webkit-details-marker { display: none; }
-details summary::before { content: "+ "; }
-details[open] summary::before { content: "- "; }
-.micro-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px 14px; margin-top: 8px; }
-.micro { font-size: 12.5px; }
-.micro .mh { display: flex; justify-content: space-between; gap: 6px; }
-.micro .mh span { color: var(--muted); }
-.micro .track { height: 6px; margin-top: 3px; }
-.micro em { font-style: normal; font-size: 10.5px; color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 0 3px; margin-left: 4px; }
-.extra-facts { font-size: 12.5px; color: var(--muted); margin-top: 8px; }
-
-footer { margin-top: 28px; font-size: 13px; color: var(--muted); }
-footer p { margin: 8px 0; }
-footer ul { padding-left: 18px; margin: 6px 0; }
-.small { font-size: 12px; }
-@media (max-width: 380px) {
-  .macros { grid-template-columns: repeat(3, 1fr); }
-  .pick { grid-template-columns: 64px 1fr auto; }
-  .bar-row { grid-template-columns: 56px 1fr auto; }
+.stations { display: grid; gap: 14px; }
+.station h4 { margin: 0 0 4px; font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: .6px; text-transform: uppercase; }
+.station ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr; gap: 6px 22px; }
+@media (min-width: 400px) { .station ul { grid-template-columns: 1fr 1fr; } }
+.station li { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-height: 34px; }
+.item-link {
+  background: none; border: 0; padding: 0; cursor: pointer; text-align: left;
+  color: var(--ink-2); font-weight: 600; font-size: 16.5px; line-height: 1.45; text-decoration: underline; text-underline-offset: 3px;
 }
-@media (prefers-reduced-motion: no-preference) {
-  .track .fill { transition: width .3s ease; }
+.item-link:hover { color: var(--navy); }
+.ic {
+  display: inline-grid; place-items: center; min-width: 28px; height: 28px; padding: 0 5px; border-radius: 14px;
+  background: var(--orange); color: var(--orange-ink); font-size: 12px; font-weight: 700; line-height: 1;
 }
+.ic.gf { background: var(--yellow); }
+.ic.n { background: var(--navy); color: #fff; }
+
+.how { margin: 0; font-size: 16px; }
+.pts { margin: 0; padding: 0; list-style: none; display: grid; gap: 5px; font-size: 15.5px; }
+.pts li { position: relative; padding-left: 18px; }
+.pts li::before { content: ""; position: absolute; left: 2px; top: .62em; width: 8px; height: 8px; border-radius: 2px; background: var(--green); }
+.pts.cons li::before { background: var(--orange); border-radius: 50%; }
+.link-btn {
+  margin-top: 20px; background: none; border: 2px solid var(--navy); color: var(--navy); cursor: pointer;
+  font-weight: 700; font-size: 13.5px; letter-spacing: .5px; text-transform: uppercase; padding: 11px 16px;
+}
+.link-btn:hover { background: var(--navy); color: #fff; }
+
+/* ---------- footer */
+.skipped { margin-top: 48px; font-size: 14px; color: var(--ink-2); }
+.skipped summary { cursor: pointer; color: var(--navy); font-weight: 500; }
+.skipped ul { margin: 8px 0 0; padding-left: 18px; }
+footer { background: var(--navy); color: #fff; margin-top: 56px; padding: 30px 0 38px; font-size: 14px; line-height: 1.7; }
+footer a { color: #fff; }
+footer p { margin: 0 0 8px; opacity: .92; }
+
+/* ---------- nutrition slide-in, like the UNC nutrition panel */
+.scrim { position: fixed; inset: 0; background: rgba(0, 0, 0, .38); z-index: 20; }
+.panel {
+  position: fixed; top: 0; right: 0; bottom: 0; width: min(480px, 100%); background: #fff; z-index: 21;
+  overflow-y: auto; overscroll-behavior: contain; padding: 24px 24px 40px; box-shadow: -10px 0 30px rgba(0, 0, 0, .18);
+  transform: translateX(100%); transition: transform .22s ease-out; visibility: hidden;
+}
+.panel.open { transform: none; visibility: visible; }
+@media (prefers-reduced-motion: reduce) { .panel { transition: none; } }
+.panel-x { width: 44px; height: 44px; border: 2px solid #222; background: #fff; font-weight: 700; font-size: 17px; cursor: pointer; }
+.p-title { font-weight: 300; font-size: 38px; line-height: 1.15; color: #6F6F6F; margin: 24px 0 12px; }
+.p-sub { color: var(--ink-2); font-size: 15px; margin: 0 0 14px; }
+.p-icons { display: flex; gap: 8px; margin-bottom: 16px; }
+.p-h { font-weight: 700; color: #7A7A7A; font-size: 15px; margin: 16px 0 2px; }
+.p-text { margin: 0; font-size: 16px; }
+.nf { width: 100%; border-collapse: collapse; margin-top: 22px; font-size: 16px; }
+.nf td { padding: 9px 6px; vertical-align: top; }
+.nf tr.main td { border-top: 1px solid #D9D9D9; }
+.nf tr.sub td:first-child { padding-left: 30px; }
+.nf tr.sub2 td:first-child { padding-left: 54px; }
+.nf td:last-child { text-align: right; white-space: nowrap; }
+.nf b { font-weight: 700; }
+.nf tr.head td { border-top: 0; font-size: 14px; color: var(--muted); }
+.nf tr.est td { color: #3F3F3F; }
+.nf tr.sect td { border-top: 2px solid #222; padding-top: 12px; font-size: 13px; color: var(--muted); }
+.p-list { margin: 8px 0 0; padding: 0; list-style: none; font-size: 15px; }
+.p-list li { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-top: 1px solid #EEE; }
+.p-list li span:last-child { color: var(--muted); white-space: nowrap; }
+.p-small { font-size: 13.5px; color: var(--ink-2); line-height: 1.6; }
+.p-links { margin: 10px 0 0; padding: 0; list-style: none; }
+.p-links li { padding: 8px 0; border-top: 1px solid #EEE; }
+body.locked { overflow: hidden; }
 </style>
 </head>
 <body>
-<header class="top">
+<div class="topbar">
   <div class="wrap">
-    <div class="brand">
-      <svg width="34" height="34" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="#4B9CD3"/><path d="M36 8 18 36h13l-4 20 19-30H33l3-18z" fill="#fff"/></svg>
-      <div>
-        <h1>HeelFuel</h1>
-        <p>High-protein picks at Top of Lenoir &amp; Chase</p>
+    <a class="back" href="https://dining.unc.edu/menu-hours/">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4 3 12l8 8 1.8-1.8L7.9 13.3H21v-2.6H7.9l4.9-4.9z" fill="currentColor"/></svg>
+      dining.unc.edu
+    </a>
+    <nav class="toplinks" aria-label="Project links">
+      <a id="research-link" href="#">How it scores</a>
+      <a id="repo-link" href="#">GitHub</a>
+    </nav>
+  </div>
+</div>
+<header class="masthead">
+  <div class="wrap">
+    <div class="mast-row">
+      <a class="logo" href="./" aria-label="HeelFuel home">HF</a>
+      <div class="mast-right">
+        <div class="mast-label">Meal<br>Builds</div>
+        <button class="pill" id="menu-btn" type="button" aria-label="How HeelFuel works" aria-haspopup="dialog">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5.5h18v2.6H3zm0 5.2h18v2.6H3zm0 5.2h18v2.6H3z" fill="#13294B"/></svg>
+        </button>
       </div>
     </div>
-    <div class="meta" id="meta"></div>
-    <div class="seg" id="day-seg" role="group" aria-label="Day"></div>
+    <div class="date-row">
+      <svg viewBox="0 0 34 34" aria-hidden="true" fill="none" stroke="#fff" stroke-width="2"><rect x="2" y="5" width="30" height="26" rx="2"/><path d="M2 11h30M9 2v6M25 2v6M8 16h18v10H8zM14 16v10M20 16v10M8 21h18"/></svg>
+      <label class="date-select"><span class="sr">Day</span><select id="day"></select>
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 5l6 6 6-6" fill="none" stroke="#fff" stroke-width="2.4"/></svg>
+      </label>
+    </div>
   </div>
 </header>
 
-<main class="wrap">
-  <div id="banner"></div>
-  <section class="card day" id="plan" aria-labelledby="plan-h"></section>
-  <section class="browse" aria-labelledby="browse-h">
-    <div class="controls">
-      <div class="sec-head">
-        <h2 id="browse-h">Meals</h2>
-        <div class="seg" id="hall-seg" role="group" aria-label="Dining hall"></div>
-      </div>
-      <div class="chips" id="period-chips" role="group" aria-label="Meal period"></div>
-    </div>
-    <div id="period"></div>
-  </section>
-  <footer id="foot"></footer>
+<main class="wrap" id="app">
+  <noscript><p class="note">HeelFuel needs JavaScript to show the builds. The raw data is at <a href="data/latest.json">data/latest.json</a>.</p></noscript>
 </main>
 
-<noscript><p class="wrap">HeelFuel needs JavaScript to show the menus. The raw data is at <a href="data/latest.json">data/latest.json</a>.</p></noscript>
+<footer>
+  <div class="wrap" id="foot"></div>
+</footer>
 
-<script>
-window.HEELFUEL = /*__HEELFUEL_DATA__*/null;
-</script>
+<div class="scrim" id="scrim" hidden></div>
+<aside class="panel" id="panel" role="dialog" aria-modal="true" aria-labelledby="p-title" tabindex="-1">
+  <button class="panel-x" id="panel-x" type="button" aria-label="Close">X</button>
+  <div id="panel-body"></div>
+</aside>
+
+<script>window.HEELFUEL = /*__HEELFUEL_DATA__*/null;</script>
 <script>
 (function () {
   "use strict";
   var D = window.HEELFUEL;
+  var app = document.getElementById("app");
+  var foot = document.getElementById("foot");
   if (!D || !D.days || !D.days.length) {
-    document.getElementById("period").innerHTML = '<div class="card empty">No data yet. The daily build hasn\'t run.</div>';
+    app.innerHTML = '<p class="note">No menus yet. The next scheduled run fills this in.</p>';
     return;
   }
+  var L = D.links || {};
+  document.getElementById("research-link").href = L.research || "#";
+  document.getElementById("repo-link").href = L.repo || "#";
 
+  // ------------------------------------------------------------ helpers
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
     });
   }
-  function num(n) { return Math.round(n).toLocaleString("en-US"); }
-  function store(k, v) { try { localStorage.setItem("heelfuel:" + k, v); } catch (e) {} }
-  function load(k) { try { return localStorage.getItem("heelfuel:" + k); } catch (e) { return null; } }
-
-  // Current Eastern time, as YYYY-MM-DD and minutes since midnight.
-  function easternNow() {
-    var parts = {};
-    try {
-      new Intl.DateTimeFormat("en-US", { timeZone: D.timezone || "America/New_York", year: "numeric", month: "2-digit",
-        day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" })
-        .formatToParts(new Date()).forEach(function (p) { parts[p.type] = p.value; });
-      return { date: parts.year + "-" + parts.month + "-" + parts.day, mins: (+parts.hour) * 60 + (+parts.minute) };
-    } catch (e) {
-      var d = new Date();
-      return { date: d.toISOString().slice(0, 10), mins: d.getHours() * 60 + d.getMinutes() };
-    }
+  function fmt(v) {
+    if (v == null || isNaN(v)) return "n/a";
+    var a = Math.abs(v);
+    if (a >= 10 || a === 0) return Math.round(v).toLocaleString("en-US");
+    return String(Math.round(v * 10) / 10);
   }
-  // "5pm-8:30pm" -> [1020, 1230]
+  function pct(v, k) { return (v == null || !D.dv[k]) ? null : Math.round(100 * v / D.dv[k]); }
+  function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
+
+  // ------------------------------------------------------------ time in Chapel Hill
+  function nowET() {
+    var p = {};
+    new Intl.DateTimeFormat("en-US", {
+      timeZone: D.timezone || "America/New_York", year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", hourCycle: "h23"
+    }).formatToParts(new Date()).forEach(function (x) { p[x.type] = x.value; });
+    return { date: p.year + "-" + p.month + "-" + p.day, mins: (+p.hour % 24) * 60 + (+p.minute) };
+  }
+  function addDays(iso, n) {
+    var d = new Date(iso + "T12:00:00Z");
+    d.setUTCDate(d.getUTCDate() + n);
+    return d.toISOString().slice(0, 10);
+  }
   function parseHours(h) {
-    var m = String(h || "").toLowerCase().match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)\s*-\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm)/);
-    if (!m) return null;
-    function t(hh, mm, ap) {
-      hh = +hh % 12; if (ap === "pm") hh += 12;
-      return hh * 60 + (+(mm || 0));
-    }
-    var a = t(m[1], m[2], m[3]), b = t(m[4], m[5], m[6]);
-    if (b <= a) b += 24 * 60;
-    return [a, b];
+    var parts = String(h || "").toLowerCase().replace(/\s+/g, "").split("-");
+    if (parts.length !== 2) return null;
+    var re = /^(\d{1,2})(?::(\d{2}))?(am|pm)?$/;
+    var a = parts[0].match(re), b = parts[1].match(re);
+    if (!a || !b) return null;
+    function mins(m, ap) { var hh = (+m[1]) % 12; if (ap === "pm") hh += 12; return hh * 60 + (+(m[2] || 0)); }
+    var s = mins(a, a[3] || b[3]), e = mins(b, b[3] || a[3]);
+    if (e <= s) e += 1440;
+    return [s, e];
   }
+  var NOW = nowET();
 
-  var now = easternNow();
-  var state = { day: 0, variant: load("variant") || "best", hall: load("hall") || D.days[0].halls[0].key, period: null };
-  D.days.forEach(function (d, i) { if (d.date === now.date) state.day = i; });
-  var isToday = function () { return D.days[state.day].date === now.date; };
-
-  function dayObj() { return D.days[state.day]; }
-  function hallObj() {
-    var d = dayObj();
-    return d.halls.filter(function (h) { return h.key === state.hall; })[0] || d.halls[0];
-  }
-  function defaultPeriod(hall) {
-    var ps = hall.periods || [];
-    if (!ps.length) return null;
-    if (!isToday()) return ps[0].key;
-    for (var i = 0; i < ps.length; i++) {
-      var r = parseHours(ps[i].hours);
-      if (r && now.mins < r[1]) return ps[i].key;
-    }
-    return ps[ps.length - 1].key;
-  }
-
-  // Minutes until a hall's last period ends today (negative when it's done for the day).
-  function lastEnd(hall) {
+  // ------------------------------------------------------------ state
+  function dayObj(k) { return D.days.filter(function (d) { return d.date === k; })[0]; }
+  function hallObj(day, k) { return day.halls.filter(function (h) { return h.key === k; })[0]; }
+  function periodObj(hall, k) { return hall.periods.filter(function (p) { return p.key === k; })[0]; }
+  function lastEnd(day) {
     var end = -1;
-    (hall.periods || []).forEach(function (p) {
-      var r = parseHours(p.hours);
-      if (r) end = Math.max(end, r[1]);
-    });
+    day.halls.forEach(function (h) { h.periods.forEach(function (p) { var r = parseHours(p.hours); if (r) end = Math.max(end, r[1]); }); });
     return end;
   }
-  function doneToday(hall) { return isToday() && hall.status === "ok" && lastEnd(hall) >= 0 && now.mins >= lastEnd(hall); }
-  function fmtClock(mins) {
-    var h = Math.floor(mins / 60) % 24, m = mins % 60, ap = h >= 12 ? "pm" : "am";
-    h = h % 12 || 12;
-    return h + (m ? ":" + (m < 10 ? "0" : "") + m : "") + ap;
+  function when(day, p) {
+    if (day.date !== NOW.date) return day.date > NOW.date ? "later" : "past";
+    var r = parseHours(p.hours);
+    if (!r) return "later";
+    if (NOW.mins >= r[0] && NOW.mins < r[1]) return "now";
+    return NOW.mins < r[0] ? "later" : "past";
+  }
+  function defaultDay() {
+    var today = dayObj(NOW.date), tomorrow = dayObj(addDays(NOW.date, 1));
+    if (today && !(tomorrow && NOW.mins >= lastEnd(today))) return today.date;
+    if (tomorrow) return tomorrow.date;
+    var future = D.days.filter(function (d) { return d.date > NOW.date; })[0];
+    return (future || D.days[D.days.length - 1]).date;
+  }
+  function defaultPeriod(day, hall) {
+    if (!hall.periods.length) return null;
+    var now = hall.periods.filter(function (p) { return when(day, p) === "now"; })[0];
+    var next = hall.periods.filter(function (p) { return when(day, p) === "later"; })[0];
+    return (now || next || hall.periods[0]).key;
+  }
+  function defaultHall(day) {
+    var saved = store("hf-hall");
+    var open = day.halls.filter(function (h) { return h.periods.length; });
+    if (saved && open.some(function (h) { return h.key === saved; })) return saved;
+    var serving = open.filter(function (h) { return h.periods.some(function (p) { return when(day, p) === "now"; }); })[0];
+    var later = open.filter(function (h) { return h.periods.some(function (p) { return when(day, p) === "later"; }); })[0];
+    return (serving || later || open[0] || day.halls[0]).key;
   }
 
-  // First load: if the remembered hall has finished serving for the day, open one that hasn't.
-  (function () {
-    var d = dayObj(), h = hallObj();
-    if (doneToday(h)) {
-      var open = d.halls.filter(function (x) { return x.status === "ok" && !doneToday(x); })[0];
-      if (open) state.hall = open.key;
-    }
+  var state = {};
+  (function init() {
+    var bits = decodeURIComponent(location.hash.replace(/^#/, "")).split("/");
+    var day = dayObj(bits[0]) || dayObj(defaultDay());
+    var hall = hallObj(day, bits[1]) || hallObj(day, defaultHall(day));
+    var period = (bits[2] && periodObj(hall, bits[2])) ? bits[2] : defaultPeriod(day, hall);
+    state = { day: day.date, hall: hall.key, period: period };
   })();
-
-  function renderMeta() {
-    var t = D.targets;
-    document.getElementById("meta").innerHTML =
-      "<span>Updated <b>" + esc(D.generated_label) + "</b></span>" +
-      "<span>Targets <b>" + num(t.protein) + " g protein</b> · <b>" + num(t.kcal_lo) + " to " + num(t.kcal_hi) + " kcal</b></span>";
-    var seg = document.getElementById("day-seg");
-    if (D.days.length < 2) { seg.style.display = "none"; return; }
-    seg.innerHTML = D.days.map(function (d, i) {
-      var name = d.date === now.date ? "Today" : (i === state.day + 1 && isToday() ? "Tomorrow" : d.weekday);
-      return '<button type="button" data-day="' + i + '" aria-pressed="' + (i === state.day) + '">' + esc(name) +
-        ' <span class="small">' + esc(d.label.replace(/^\w+, /, "")) + "</span></button>";
-    }).join("");
+  function fromHash() {
+    var bits = decodeURIComponent(location.hash.replace(/^#/, "")).split("/");
+    var day = dayObj(bits[0]);
+    if (!day) return;
+    var hall = hallObj(day, bits[1]) || hallObj(day, state.hall) || day.halls[0];
+    setState({ day: day.date, hall: hall.key, period: bits[2] || null });
+  }
+  window.addEventListener("hashchange", fromHash);
+  function cur() {
+    var day = dayObj(state.day), hall = hallObj(day, state.hall);
+    return { day: day, hall: hall, period: state.period ? periodObj(hall, state.period) : null };
+  }
+  function setState(patch) {
+    for (var k in patch) state[k] = patch[k];
+    var c = cur();
+    if (!c.period || !periodObj(c.hall, state.period)) state.period = defaultPeriod(c.day, c.hall);
+    try { history.replaceState(null, "", "#" + [state.day, state.hall, state.period || ""].join("/")); } catch (e) {}
+    render();
   }
 
-  function renderBanner() {
-    var el = document.getElementById("banner");
-    var newest = D.days[D.days.length - 1].date;
-    if (D.days[0].date > now.date || newest < now.date) {
-      el.innerHTML = '<div class="banner">These menus are for ' + esc(D.days[0].label) +
-        ". Today's update hasn't run yet; check back after 6 AM.</div>";
-    } else el.innerHTML = "";
+  // ------------------------------------------------------------ rendering
+  function dayLabel(d) {
+    if (d.date === NOW.date) return "Today (" + d.label + ")";
+    if (d.date === addDays(NOW.date, 1)) return "Tomorrow (" + d.label + ")";
+    return d.label;
+  }
+  var sel = document.getElementById("day");
+  sel.innerHTML = D.days.map(function (d) { return '<option value="' + esc(d.date) + '">' + esc(dayLabel(d)) + "</option>"; }).join("");
+  sel.addEventListener("change", function () {
+    var day = dayObj(sel.value);
+    var hall = hallObj(day, state.hall) || day.halls[0];
+    setState({ day: day.date, hall: hall.key });
+  });
+
+  function hallTabs(day) {
+    return '<div class="hall-tabs" role="tablist" aria-label="Dining hall">' + day.halls.map(function (h) {
+      var n = h.periods.length;
+      var sub = h.status === "ok" ? (n ? n + " meal period" + (n > 1 ? "s" : "") : "Closed") : (h.status === "no_menu" ? "No menu posted" : "Menu unavailable");
+      return '<button class="hall-tab" role="tab" type="button" data-hall="' + esc(h.key) + '" aria-selected="' + (h.key === state.hall) + '">' +
+        esc(h.name) + "<small>" + esc(sub) + "</small></button>";
+    }).join("") + "</div>";
   }
 
-  function bar(b) {
-    var max = Math.max(b.hi * 1.15, b.value * 1.05, 1);
-    var bandL = 100 * b.lo / max, bandW = 100 * (b.hi - b.lo) / max;
-    var fillW = Math.min(100, 100 * b.value / max);
-    return '<div class="bar-row"><span class="lbl">' + esc(b.label) + '</span>' +
-      '<div class="track" role="img" aria-label="' + esc(b.label + " " + num(b.value) + " " + b.unit + ", target " + num(b.target)) + '">' +
-      '<div class="band" style="left:' + bandL + "%;width:" + bandW + '%"></div>' +
-      '<div class="fill ' + b.status + '" style="width:' + fillW + '%"></div></div>' +
-      '<span class="val"><b>' + num(b.value) + "</b><small> / " + num(b.target) + " " + esc(b.unit) + "</small></span></div>";
+  function periodTabs(day, hall) {
+    var n = hall.periods.length;
+    if (!n) return "";
+    var colsM = n <= 3 ? n : (n === 4 ? 2 : 3), colsD = Math.min(n, 6);
+    return '<div class="period-tabs" role="tablist" aria-label="Meal period" style="--cols-m:' + colsM + ";--cols-d:" + colsD + '">' +
+      hall.periods.map(function (p) {
+        return '<button class="period-tab" role="tab" type="button" data-period="' + esc(p.key) + '" aria-selected="' + (p.key === state.period) + '">' +
+          esc(p.label) + (p.hours ? "<span>(" + esc(p.hours) + ")</span>" : "") + "</button>";
+      }).join("") + "</div>";
   }
 
-  function renderPlan() {
-    var d = dayObj(), p = d.plan[state.variant] || d.plan.best;
-    var keys = Object.keys(d.plan);
-    var seg = keys.map(function (k) {
-      var lbl = k === "best" ? "Both halls" : d.plan[k].label.replace(" only", "");
-      return '<button type="button" data-variant="' + k + '" aria-pressed="' + (k === state.variant) + '">' + esc(lbl) + "</button>";
-    }).join("");
-    var html = '<div class="sec-head"><h2 id="plan-h">If you eat the top pick at every meal</h2></div>' +
-      '<div class="seg" style="margin-top:10px" role="group" aria-label="Which halls">' + seg + "</div>";
-    if (!p.picks.length) {
-      html += '<p class="sub" style="margin-top:12px">' + esc(p.notes[0] || "Nothing posted.") + "</p>";
-    } else {
-      html += '<ul class="picks">' + p.picks.map(function (k) {
-        return '<li><button type="button" class="pick" data-jump="' + esc(k.hall + "|" + k.period_key + "|" + k.rank) + '">' +
-          '<span class="slot">' + esc(k.slot_label) + "</span>" +
-          '<span class="what"><b>' + esc(k.title) + "</b><span>" + esc(k.hall_name + " · " + k.period + (k.rank > 1 ? " · pick #" + k.rank : "")) + "</span></span>" +
-          '<span class="nums"><b>' + num(k.protein) + " g</b>" + num(k.kcal) + " kcal</span></button></li>";
-      }).join("") + "</ul>";
-      html += '<div class="bars">' + p.bars.map(bar).join("") + "</div>";
-      html += '<ul class="notes">' + p.notes.map(function (n) { return "<li>" + esc(n) + "</li>"; }).join("") + "</ul>";
+  function scoreBars(b) {
+    var rows = [["Macros", b.sub.macros, 35], ["Micros", b.sub.micros, 35], ["Clean", b.sub.clean, 30]];
+    return '<div class="score"><div class="score-num">' + b.score + "<small>of 100</small></div><div class=\"bars\">" +
+      rows.map(function (r) {
+        var w = Math.max(0, Math.min(100, 100 * r[1] / r[2]));
+        return '<div class="bar-row"><span>' + r[0].toUpperCase() + '</span><div class="bar" role="img" aria-label="' + r[0] + " " + Math.round(r[1]) + " of " + r[2] +
+          '"><i style="width:' + w.toFixed(1) + '%"></i></div><b>' + Math.round(r[1]) + "/" + r[2] + "</b></div>";
+      }).join("") + "</div></div>";
+  }
+
+  function macroStrip(b) {
+    var t = b.totals, dv = b.dv;
+    var cells = [
+      ["Calories", fmt(t.kcal), "", null],
+      ["Protein", fmt(t.protein), "g", dv.protein],
+      ["Carbs", fmt(t.carbs), "g", dv.carbs],
+      ["Fat", fmt(t.fat), "g", dv.fat],
+      ["Fiber", fmt(t.fiber), "g", dv.fiber]
+    ];
+    return '<div class="macros">' + cells.map(function (c) {
+      return '<div class="macro"><span class="v">' + c[1] + (c[2] ? "<small> " + c[2] + "</small>" : "") + '</span><span class="k">' + c[0] +
+        '</span><span class="dv">' + (c[3] == null ? "&nbsp;" : c[3] + "% DV") + "</span></div>";
+    }).join("") + "</div>";
+  }
+
+  function chips(b) {
+    var anyEst = b.chips.some(function (c) { return c.est; });
+    return '<p class="label">Daily Value from this one meal' + (anyEst ? " <em>(* estimated)</em>" : "") + '</p><div class="chips">' +
+      b.chips.map(function (c) {
+        return '<span class="chip" style="--p:' + Math.min(100, c.pct) + '%">' + esc(c.label) + " <b>" + c.pct + "%" + (c.est ? "*" : "") + "</b></span>";
+      }).join("") + "</div>";
+  }
+
+  function itemIcons(it) {
+    var out = "";
+    if (it.servings > 1) out += '<span class="ic n" title="Take ' + it.servings + ' servings">' + it.servings + "x</span>";
+    (it.tags || []).forEach(function (t) {
+      out += '<span class="ic' + (t === "GF" ? " gf" : "") + '" title="' + (t === "H" ? "Halal" : "Made without gluten") + '">' + esc(t) + "</span>";
+    });
+    return out;
+  }
+
+  function steps(b) {
+    return '<p class="label">Build it <em>(tap an item for its label)</em></p><div class="stations">' + b.steps.map(function (g) {
+      return '<div class="station"><h4>' + esc(g.station) + "</h4><ul>" + g.items.map(function (it) {
+        return '<li><button class="item-link" type="button" data-rid="' + esc(it.rid) + '" data-station="' + esc(g.station) + '" data-servings="' + it.servings + '">' +
+          esc(it.name) + "</button>" + itemIcons(it) + "</li>";
+      }).join("") + "</ul></div>";
+    }).join("") + "</div>";
+  }
+
+  function list(items, cls) {
+    return '<ul class="pts' + (cls ? " " + cls : "") + '">' + items.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul>";
+  }
+
+  function buildBlock(b, i) {
+    var open = true;
+    var id = "b" + i;
+    return '<section class="build" data-open="' + open + '" data-i="' + i + '">' +
+      '<div class="build-head"><h3 class="build-title"><span class="rank" aria-label="Rank ' + b.rank + '">' + b.rank + "</span>" + esc(b.name) + "</h3>" +
+      '<button class="toggle" type="button" aria-expanded="' + open + '" aria-controls="' + id + '" aria-label="Show or hide ' + esc(b.name) + '"></button></div>' +
+      '<div class="build-body" id="' + id + '">' +
+      (b.blurb ? '<p class="blurb">' + esc(b.blurb) + "</p>" : "") +
+      scoreBars(b) + macroStrip(b) + chips(b) + steps(b) +
+      '<p class="label">How to plate it</p><p class="how">' + esc(b.how) + "</p>" +
+      (b.why && b.why.length ? '<p class="label">Why it ranks</p>' + list(b.why) : "") +
+      (b.tradeoffs && b.tradeoffs.length ? '<p class="label">Tradeoffs</p>' + list(b.tradeoffs, "cons") : "") +
+      '<button class="link-btn" type="button" data-facts="' + i + '">Nutrition Facts for this meal</button>' +
+      "</div></section>";
+  }
+
+  function periodBody(day, hall, p) {
+    if (!p) return "";
+    var w = when(day, p), t = p.target;
+    var kind = { breakfast: "breakfast", main: p.slot === "dinner" ? "dinner" : "lunch", late: "late-night meal" }[t.kind] || "meal";
+    var head = '<div class="period-head"><h2>' + esc(p.label) + "</h2>" +
+      (w === "now" ? '<span class="status now">Serving now</span>' : "") +
+      (w === "later" && day.date === NOW.date ? '<span class="status later">Later today</span>' : "") +
+      '<p class="target">Built as one ' + kind + ": " + fmt(t.kcal_lo) + "-" + fmt(t.kcal_hi) + " kcal, " + fmt(t.protein) + "+ g protein. " +
+      "Pulled from " + p.on_menu + " items on the line.</p></div>";
+    var notes = "";
+    if (p.missing_recipes) notes += '<p class="note">' + p.missing_recipes + " item" + (p.missing_recipes > 1 ? "s" : "") + " had no nutrition label from UNC, so they were left out.</p>";
+    if (!p.builds.length) {
+      return head + '<p class="note">Nothing on this line builds a full meal that fits. <a href="' + esc(hall.menu_url) + '">See the full menu</a>.</p>';
     }
-    document.getElementById("plan").innerHTML = html;
+    return head + notes + p.builds.map(buildBlock).join("");
   }
 
-  function renderHallSeg() {
-    var d = dayObj();
-    document.getElementById("hall-seg").innerHTML = d.halls.map(function (h) {
-      return '<button type="button" data-hall="' + h.key + '" aria-pressed="' + (h.key === hallObj().key) + '">' + esc(h.name) + "</button>";
-    }).join("");
+  function hallBody(day, hall) {
+    if (hall.status === "error") return '<p class="note">The last run couldn&#39;t load this menu from dining.unc.edu. <a href="' + esc(hall.menu_url) + '">Try the UNC page</a>.</p>';
+    if (hall.status === "no_menu") return '<p class="note">' + esc(hall.name) + " hasn&#39;t posted a menu for " + esc(day.label) + ' yet. <a href="' + esc(hall.menu_url) + '">Check UNC&#39;s page</a>.</p>';
+    if (!hall.periods.length) return '<p class="note">' + esc(hall.name) + " is closed on " + esc(day.label) + ".</p>";
+    return "";
   }
 
-  function renderChips() {
-    var h = hallObj();
-    var el = document.getElementById("period-chips");
-    if (!h.periods.length) { el.innerHTML = ""; return; }
-    var nowKey = isToday() ? defaultPeriod(h) : null;
-    el.innerHTML = h.periods.map(function (p) {
-      var hrs = p.hours ? "<small>" + esc(p.hours) + "</small>" : "";
-      return '<button type="button" class="chip' + (p.key === nowKey ? " now" : "") + '" data-period="' + esc(p.key) +
-        '" aria-pressed="' + (p.key === state.period) + '">' + esc(p.label) + hrs + "</button>";
-    }).join("");
-    // Center the active chip by scrolling the chip row only, never the page.
-    var active = el.querySelector('[aria-pressed="true"]');
-    if (active) el.scrollLeft = Math.max(0, active.offsetLeft - (el.clientWidth - active.offsetWidth) / 2);
+  var ABOUT =
+    "<p>Each build is a real dish (burrito bowl, power salad, loaded scramble, shawarma bowl) filled with the best items on today&#39;s line, " +
+    "pulled from whichever stations have them. Meat, fish, eggs and dairy carry the protein; no tofu or quinoa swaps.</p>" +
+    "<p><b>Macros (35):</b> protein first (35 g+ at breakfast, 42 g+ at lunch and dinner), then a normal plate size for one meal. " +
+    "<b>Micros (35):</b> % Daily Value of fiber, potassium, iron, calcium, vitamin D, magnesium, zinc, vitamins C and A and omega-3, plus fruit and veg. " +
+    "<b>Clean (30):</b> how much is minimally processed, minus deductions scaled by dose and by how strong the evidence is " +
+    "(added sugar, sodium, fried food, processed meat, dyes and additives).</p>" +
+    "<p>Every meal is judged on its own. % Daily Value uses the FDA label values, the same column UNC&#39;s nutrition panel shows. " +
+    "Magnesium, zinc, vitamins C and A and omega-3 aren&#39;t on UNC&#39;s labels, so they&#39;re estimated from USDA data and marked *.</p>";
+
+  function render() {
+    var c = cur(), day = c.day, hall = c.hall, p = c.period;
+    sel.value = day.date;
+    var stale = D.days.every(function (d) { return d.date < NOW.date; });
+    var accOpen = store("hf-about") === "1";
+    app.innerHTML =
+      (stale ? '<p class="note">These builds are from ' + esc(day.label) + '; today&#39;s run hasn&#39;t landed yet.</p>' : "") +
+      hallTabs(day) +
+      "<h1>" + esc(hall.name) + '</h1><p class="building">' + esc(hall.building) + "</p>" +
+      '<div class="acc"><button type="button" id="acc-btn" aria-expanded="' + accOpen + '" aria-controls="acc-body">How builds are ranked' +
+      '<svg viewBox="0 0 22 22" aria-hidden="true"><path d="M3 7l8 8 8-8" fill="none" stroke="#4B9CD3" stroke-width="3.2"/></svg></button>' +
+      '<div class="acc-body" id="acc-body"' + (accOpen ? "" : " hidden") + ">" + ABOUT + "</div></div>" +
+      '<p class="intro">Meals you can build at ' + esc(hall.name) + " from what&#39;s actually on the line: high protein, loaded with micronutrients, minimally processed. " +
+      'Full menu on <a href="' + esc(hall.menu_url) + '">dining.unc.edu</a>.</p>' +
+      hallBody(day, hall) + periodTabs(day, hall) + periodBody(day, hall, p) +
+      skipped(day);
   }
 
-  function micros(ms) {
-    return '<div class="micro-grid">' + ms.map(function (m) {
-      var w = Math.min(100, m.pct);
-      return '<div class="micro"><div class="mh"><b>' + esc(m.label) + (m.est ? "<em>est.</em>" : "") + "</b><span>" +
-        esc(m.amount + " " + m.unit) + " · " + m.pct + '%</span></div><div class="track"><div class="fill ' + (m.pct >= 30 ? "ok" : "") +
-        '" style="width:' + w + '%"></div></div></div>';
-    }).join("") + '</div><p class="extra-facts">% of a full day\'s needs. "est." values come from the foods themselves, not the dining labels.</p>';
+  function skipped(day) {
+    if (!day.excluded || !day.excluded.length) return "";
+    return '<details class="skipped"><summary>' + day.excluded.length + " item" + (day.excluded.length > 1 ? "s" : "") +
+      " skipped because UNC&#39;s label doesn&#39;t add up</summary><ul>" +
+      day.excluded.map(function (x) { return "<li>" + esc(x.name) + " (" + esc(x.hall) + ", " + esc(x.station) + "): " + esc(x.reason) + "</li>"; }).join("") +
+      "</ul></details>";
   }
 
-  function mealCard(c, p) {
-    var t = c.totals;
-    var items = c.items.map(function (it) {
-      var flags = it.flags.map(function (f) { return '<span class="flag">' + esc(f) + "</span>"; }).join("");
-      return '<li><span class="qty">' + it.servings + "x</span>" +
-        '<span class="iname">' + esc(it.name) + flags + "<small>" + esc(it.serving + " each · " + it.station) + "</small></span>" +
-        '<span class="inums">' + num(it.protein) + " g · " + num(it.kcal) + " kcal</span></li>";
-    }).join("");
-    var why = c.pros.map(function (x) { return '<p class="pro"><span class="ico" aria-hidden="true">+</span><span>' + esc(x) + "</span></p>"; }).join("") +
-      c.cons.map(function (x) { return '<p class="con"><span class="ico" aria-hidden="true">!</span><span>' + esc(x) + "</span></p>"; }).join("");
-    return '<article class="card meal" id="' + esc("m-" + state.hall + "-" + p.key + "-" + c.rank) + '">' +
-      '<div class="meal-top"><div class="rank' + (c.rank === 1 ? " r1" : "") + '">' + c.rank + "</div>" +
-      "<div><div class=\"fmt\">" + esc(c.format) + "</div><h4>" + esc(c.title) + "</h4></div>" +
-      '<div class="score"><b>' + c.score + "</b><span>score</span></div></div>" +
-      '<div class="macros">' +
-      '<div class="macro protein"><b>' + num(t.protein) + "</b><span>g protein</span></div>" +
-      '<div class="macro"><b>' + num(t.kcal) + "</b><span>kcal</span></div>" +
-      '<div class="macro"><b>' + num(t.carbs) + "</b><span>g carbs</span></div>" +
-      '<div class="macro"><b>' + num(t.fat) + "</b><span>g fat</span></div>" +
-      '<div class="macro"><b>' + num(t.fiber) + "</b><span>g fiber</span></div></div>" +
-      '<ul class="items">' + items + "</ul>" +
-      '<div class="why" aria-label="Why it ranks">' + why + "</div>" +
-      (c.compare ? '<div class="compare">' + esc(c.compare) + "</div>" : "") +
-      '<div class="idea"><b>Make it tasty</b>' + esc(c.idea) + "</div>" +
-      "<details><summary>Micronutrients and more</summary>" + micros(c.micros) +
-      '<p class="extra-facts">Sodium ' + num(t.sodium) + " mg · saturated fat " + num(t.sat_fat) + " g · added sugar " + num(t.added_sugar) + " g</p></details>" +
-      "</article>";
-  }
+  foot.innerHTML =
+    "<p>HeelFuel is a student project, not affiliated with Carolina Dining Services. Menus and nutrition labels come from " +
+    '<a href="' + esc(L.source) + '">dining.unc.edu</a> and are rebuilt three times a day. Always check allergens with the hall.</p>' +
+    "<p>Updated " + esc(D.generated_label) + ". " + '<a href="' + esc(L.research) + '">How it scores, with sources</a> &middot; ' +
+    '<a href="data/latest.json">Raw data</a> &middot; <a href="' + esc(L.repo) + '">GitHub</a></p>';
 
-  function renderPeriod() {
-    var h = hallObj(), el = document.getElementById("period");
-    if (h.status !== "ok") {
-      var why = h.status === "error" ? "Couldn't load this menu from dining.unc.edu. " : "";
-      el.innerHTML = '<div class="card empty"><b>' + esc(h.name) + "</b>: " + esc(why + (h.message || "No menu posted.")) + "</div>";
-      return;
-    }
-    var p = h.periods.filter(function (x) { return x.key === state.period; })[0];
-    if (!p) { el.innerHTML = '<div class="card empty">' + esc(h.name) + " has nothing posted for this day.</div>"; return; }
-    var note = "";
-    if (doneToday(h)) {
-      var other = dayObj().halls.filter(function (x) { return x.key !== h.key && x.status === "ok" && !doneToday(x); })[0];
-      note = '<div class="banner">' + esc(h.name) + " is done serving for today." +
-        (other ? ' <button type="button" class="linkish" data-hall="' + esc(other.key) + '">' + esc(other.name) +
-          " is open until " + fmtClock(lastEnd(other)) + "</button>" : "") + "</div>";
-    }
-    var head = '<div class="period-head"><h3>' + esc(p.label) + (p.hours ? ' <span class="sub">' + esc(p.hours) + "</span>" : "") + "</h3>" +
-      '<div class="sub">Built for about ' + num(p.target.kcal) + " kcal and " + num(p.target.protein) + " g protein" +
-      (p.counts ? "" : " (an alternate to the main meal, not an extra one)") + "</div>" +
-      (p.missing_recipes ? '<div class="sub">' + p.missing_recipes + " item" + (p.missing_recipes > 1 ? "s" : "") +
-        " on this line had no nutrition label when this was built, so " + (p.missing_recipes > 1 ? "they weren't" : "it wasn't") + " considered.</div>" : "") +
-      "</div>";
-    if (!p.combos.length) {
-      el.innerHTML = note + head + '<div class="card empty">Nothing on this line adds up to a real meal. Check the menu for grab-and-go options.</div>';
-      return;
-    }
-    el.innerHTML = note + head + p.combos.map(function (c) { return mealCard(c, p); }).join("");
+  // ------------------------------------------------------------ nutrition panel
+  var panel = document.getElementById("panel"), scrim = document.getElementById("scrim"), pbody = document.getElementById("panel-body");
+  var lastFocus = null;
+  function openPanel(html) {
+    lastFocus = document.activeElement;
+    pbody.innerHTML = html;
+    scrim.hidden = false;
+    panel.classList.add("open");
+    panel.scrollTop = 0;
+    document.body.classList.add("locked");
+    document.getElementById("panel-x").focus();
   }
-
-  function renderFoot() {
-    var d = dayObj(), L = D.links;
-    var ex = (d.excluded || []).map(function (x) {
-      return "<li>" + esc(x.name) + " (" + esc(x.hall + ", " + x.station) + "): " + esc(x.reason) + "</li>";
-    }).join("");
-    document.getElementById("foot").innerHTML =
-      '<p><a href="' + esc(L.research) + '">How the scoring works</a>: protein first, then carb quality, fiber, produce and whole foods, with small evidence-weighted deductions for things like added sugar, sodium and dyes. Nothing gets excluded for a gram of sugar or a single additive.</p>' +
-      "<p>Menus and nutrition labels: <a href=\"" + esc(L.source) + "\">dining.unc.edu</a>. Portions on the line vary, so treat numbers as close estimates. Not medical advice, and allergens aren't filtered: check the label at the station.</p>" +
-      (ex ? "<details><summary>Left out for bad label data (" + (d.excluded.length) + ")</summary><ul>" + ex + "</ul></details>" : "") +
-      '<p class="small"><a href="' + esc(L.repo) + '">Source on GitHub</a> · data: <a href="data/latest.json">latest.json</a></p>';
+  function closePanel() {
+    panel.classList.remove("open");
+    scrim.hidden = true;
+    document.body.classList.remove("locked");
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
   }
-
-  function renderAll() {
-    var h = hallObj();
-    state.hall = h.key;
-    if (!h.periods.some(function (p) { return p.key === state.period; })) state.period = defaultPeriod(h);
-    renderMeta(); renderBanner(); renderPlan(); renderHallSeg(); renderChips(); renderPeriod(); renderFoot();
-  }
-
-  document.addEventListener("click", function (e) {
-    var b = e.target.closest ? e.target.closest("button") : null;
-    if (!b) return;
-    if (b.dataset.day != null) { state.day = +b.dataset.day; state.period = null; renderAll(); }
-    else if (b.dataset.variant) { state.variant = b.dataset.variant; store("variant", state.variant); renderPlan(); }
-    else if (b.dataset.hall) { state.hall = b.dataset.hall; store("hall", state.hall); state.period = null; renderAll(); }
-    else if (b.dataset.period) { state.period = b.dataset.period; renderChips(); renderPeriod(); }
-    else if (b.dataset.jump) {
-      var parts = b.dataset.jump.split("|");
-      state.hall = parts[0]; state.period = parts[1];
-      renderHallSeg(); renderChips(); renderPeriod();
-      var card = document.getElementById("m-" + parts[0] + "-" + parts[1] + "-" + parts[2]);
-      if (card && card.scrollIntoView) card.scrollIntoView({ behavior: "smooth", block: "start" });
+  document.getElementById("panel-x").addEventListener("click", closePanel);
+  scrim.addEventListener("click", closePanel);
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && panel.classList.contains("open")) closePanel();
+    if (e.key === "Tab" && panel.classList.contains("open")) {
+      var f = panel.querySelectorAll("button, a[href], summary");
+      if (!f.length) return;
+      var first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     }
   });
 
-  renderAll();
+  var ROWS = [
+    ["fat", "Total Fat", "g", "main", true], ["sat_fat", "Saturated Fat", "g", "sub", true], ["trans_fat", "Trans Fat", "g", "sub", false],
+    ["cholesterol", "Cholesterol", "mg", "main", true], ["sodium", "Sodium", "mg", "main", true],
+    ["carbs", "Total Carbohydrate", "g", "main", true], ["fiber", "Dietary Fiber", "g", "sub", true], ["sugars", "Total Sugars", "g", "sub", false],
+    ["added_sugar", "Added Sugars", "g", "sub2", true], ["protein", "Protein", "g", "main", true],
+    ["vit_d", "Vitamin D", "mcg", "main", true], ["calcium", "Calcium", "mg", "main", true], ["iron", "Iron", "mg", "main", true], ["potassium", "Potassium", "mg", "main", true]
+  ];
+  var EST = [["magnesium", "Magnesium", "mg"], ["zinc", "Zinc", "mg"], ["vit_c", "Vitamin C", "mg"], ["vit_a", "Vitamin A", "mcg"], ["epa_dha", "Omega-3 (EPA+DHA)", "mg"]];
+
+  function factsTable(amount, vals, est) {
+    var h = '<table class="nf"><tr class="head"><td><b>Amount Per Serving</b> ' + esc(amount) + "</td><td>% Daily Value</td></tr>" +
+      '<tr class="main"><td><b>Calories</b> ' + fmt(vals.kcal) + "</td><td></td></tr>";
+    ROWS.forEach(function (r) {
+      var v = vals[r[0]];
+      if (v == null && (r[0] === "vit_d" || r[0] === "added_sugar")) return;
+      var name = r[3] === "main" ? "<b>" + r[1] + "</b>" : r[1];
+      var p = r[4] ? pct(v, r[0]) : null;
+      h += '<tr class="' + r[3] + '"><td>' + name + " " + fmt(v) + " " + r[2] + "</td><td>" + (p == null ? "" : p + "%") + "</td></tr>";
+    });
+    var known = est ? EST.filter(function (r) { return est[r[0]] != null; }) : [];
+    if (known.length) {
+      h += '<tr class="sect"><td colspan="2">Estimated from USDA data (not on UNC&#39;s label)</td></tr>';
+      known.forEach(function (r) {
+        var v = est[r[0]];
+        h += '<tr class="main est"><td><b>' + r[1] + "</b> " + fmt(v) + " " + r[2] + "*</td><td>" + pct(v, r[0]) + "%</td></tr>";
+      });
+    }
+    return h + "</table>";
+  }
+
+  function showItem(rid, station, servings) {
+    var it = D.items[rid];
+    if (!it) return;
+    var icons = "";
+    (it.badges || []).forEach(function (t) { icons += '<span class="ic' + (t === "GF" ? " gf" : "") + '">' + esc(t) + "</span>"; });
+    var html = '<h2 class="p-title" id="p-title">' + esc(it.name) + "</h2>" +
+      (icons ? '<div class="p-icons">' + icons + "</div>" : "") +
+      '<p class="p-sub">' + esc(station || it.station) + " &middot; " + esc(it.processing) +
+      (servings > 1 ? " &middot; this build takes " + servings + " servings" : "") + "</p>" +
+      '<p class="p-h">Allergens</p><p class="p-text">' + (it.allergens.length ? esc(it.allergens.join(", ")) : "None listed") + "</p>" +
+      factsTable(it.serving || "1 serving", it.label, it.est);
+    if (it.notes && it.notes.length) html += '<p class="p-h">Notes</p><p class="p-text">' + esc(it.notes.join(". ")) + ".</p>";
+    if (it.ingredients) html += '<p class="p-h">Ingredients</p><p class="p-small">' + esc(it.ingredients) + "</p>";
+    openPanel(html);
+  }
+
+  function showFacts(i) {
+    var c = cur(), b = c.period.builds[i];
+    var rows = [];
+    b.steps.forEach(function (g) {
+      g.items.forEach(function (x) {
+        var it = D.items[x.rid];
+        var kcal = it ? it.label.kcal * x.servings : 0, prot = it ? it.label.protein * x.servings : 0;
+        rows.push("<li><span>" + (x.servings > 1 ? x.servings + "x " : "") + esc(x.name) + '</span><span>' + fmt(kcal) + " kcal &middot; " + fmt(prot) + " g protein</span></li>");
+      });
+    });
+    var html = '<h2 class="p-title" id="p-title">' + esc(b.name) + "</h2>" +
+      '<p class="p-sub">' + esc(c.hall.name) + " &middot; " + esc(c.period.label) + " &middot; " + esc(c.day.label) + "</p>" +
+      factsTable("the whole meal", b.totals, b.totals) +
+      '<p class="p-h">What&#39;s in it</p><ul class="p-list">' + rows.join("") + "</ul>" +
+      '<p class="p-small" style="margin-top:16px">Label numbers are UNC&#39;s, summed across the build. * Estimated from USDA data for the same foods.</p>';
+    openPanel(html);
+  }
+
+  function showAbout() {
+    var halls = cur().day.halls;
+    openPanel('<h2 class="p-title" id="p-title">How HeelFuel works</h2><div class="p-small" style="font-size:15.5px">' + ABOUT + "</div>" +
+      '<ul class="p-links"><li><a href="' + esc(L.research) + '">The full write-up with sources</a></li>' +
+      halls.map(function (h) { return '<li><a href="' + esc(h.menu_url) + '">' + esc(h.name) + " full menu on dining.unc.edu</a></li>"; }).join("") +
+      '<li><a href="data/latest.json">Raw data (JSON)</a></li><li><a href="' + esc(L.repo) + '">Source on GitHub</a></li></ul>');
+  }
+  document.getElementById("menu-btn").addEventListener("click", showAbout);
+
+  // ------------------------------------------------------------ events
+  app.addEventListener("click", function (e) {
+    var t = e.target.closest("button");
+    if (!t) return;
+    if (t.dataset.hall) { store("hf-hall", t.dataset.hall); setState({ hall: t.dataset.hall }); return; }
+    if (t.dataset.period) { setState({ period: t.dataset.period }); return; }
+    if (t.dataset.rid) { showItem(t.dataset.rid, t.dataset.station, +t.dataset.servings); return; }
+    if (t.dataset.facts != null) { showFacts(+t.dataset.facts); return; }
+    if (t.id === "acc-btn") {
+      var open = t.getAttribute("aria-expanded") !== "true";
+      t.setAttribute("aria-expanded", open);
+      document.getElementById("acc-body").hidden = !open;
+      store("hf-about", open ? "1" : "0");
+      return;
+    }
+    if (t.classList.contains("toggle")) {
+      var sec = t.closest(".build"), isOpen = sec.dataset.open !== "true";
+      sec.dataset.open = isOpen;
+      t.setAttribute("aria-expanded", isOpen);
+    }
+  });
+  app.addEventListener("keydown", function (e) {
+    var t = e.target;
+    if (!t.getAttribute || t.getAttribute("role") !== "tab" || (e.key !== "ArrowRight" && e.key !== "ArrowLeft")) return;
+    var tabs = Array.prototype.slice.call(t.parentNode.querySelectorAll('[role="tab"]'));
+    var i = tabs.indexOf(t) + (e.key === "ArrowRight" ? 1 : -1);
+    var next = tabs[(i + tabs.length) % tabs.length];
+    next.click();
+    var again = app.querySelector('[role="tab"][data-' + (next.dataset.hall ? "hall" : "period") + '="' + (next.dataset.hall || next.dataset.period) + '"]');
+    if (again) again.focus();
+  });
+
+  render();
 })();
 </script>
 </body>

@@ -1,4 +1,4 @@
-"""Daily pipeline: fetch menus, score meals, write the static site.
+"""Daily pipeline: fetch menus, find the best meal builds for every period, write the static site.
 
     python -m heelfuel.build --out site --cache .cache/recipes.json
 """
@@ -6,9 +6,7 @@
 from __future__ import annotations
 
 import argparse
-import json
 import logging
-import os
 import sys
 import time
 from datetime import date as Date, datetime, timedelta
@@ -16,62 +14,30 @@ from typing import Callable, Optional
 from zoneinfo import ZoneInfo
 
 from . import config as C
+from .builds import best_builds, nice
 from .classify import analyze
-from .explain import compare_to, micros, pros_cons, short_name, tasty_idea, title_for
+from .explain import build_payload, item_payload
 from .fetch import RecipeCache, fetch_hall_menu, http_get
-from .formats import meal_format
 from .model import HallMenu
-from .optimize import search
-from .plan import daily_plans
 from .render import render_site
-from .score import IX, slot_targets
+from .score import target_for
 
 log = logging.getLogger("heelfuel")
 
 
-def _item_payload(f, servings: int) -> dict:
-    n = f.nutrition
-    flags = []
-    if f.fried:
-        flags.append("fried")
-    if f.processed_meat_g:
-        flags.append("processed meat")
-    flags += list(f.dyes) + list(f.red_flags)
-    return {
-        "name": short_name(f.name), "station": f.station, "servings": servings, "serving": f.serving.lower(),
-        "kcal": round(n.kcal * servings), "protein": round(n.protein * servings),
-        "carbs": round(n.carbs * servings), "fat": round(n.fat * servings), "role": f.role, "flags": flags,
-    }
+def _target_payload(t: C.MealTarget) -> dict:
+    return {"kind": t.kind, "kcal_lo": t.kcal_lo, "kcal_hi": t.kcal_hi, "protein": t.protein}
 
 
-def _combo_payload(combo, rank: int, target, slot: str, condiments, best=None, period: str = "") -> dict:
-    v = combo.vec
-    pros, cons = pros_cons(combo, target, slot, period)
-    return {
-        "rank": rank,
-        "score": round(min(100.0, combo.score)),
-        "title": title_for(combo, slot),
-        "format": meal_format(combo.items, slot) or "plate",
-        "items": [_item_payload(f, s) for f, s in combo.items],
-        "totals": {k: round(v[IX[k]], 1) for k in ("kcal", "protein", "carbs", "fat", "fiber", "sodium", "sat_fat", "added_sugar", "sugars")},
-        "micros": micros(v),
-        "pros": pros,
-        "cons": cons,
-        "idea": tasty_idea(combo, slot, condiments),
-        "compare": compare_to(best, combo) if best is not None and rank > 1 else "",
-        "stations": sorted({f.station for f, _ in combo.items}),
-    }
-
-
-def process_day(day: str, menus: dict, cache: RecipeCache) -> dict:
-    present = {p.slot for m in menus.values() if m.status == "ok" for p in m.periods if p.counts}
-    targets = slot_targets(present)
-    halls_out, plan_periods, excluded = [], [], {}
+def process_day(day: str, menus: dict, cache: RecipeCache, items: dict) -> dict:
+    """One day's payload. Every item a build uses is added to `items` (shared across days)."""
+    halls_out, excluded = [], {}
     for hall, info in C.HALLS.items():
         m: HallMenu = menus[hall]
-        hall_out = {"key": hall, "name": info["name"], "status": m.status, "message": m.message, "periods": []}
+        hall_out = {"key": hall, "name": info["name"], "building": info["building"], "status": m.status,
+                    "message": m.message, "menu_url": C.MENU_URL.format(slug=info["slug"], date=day), "periods": []}
         for p in m.periods:
-            t = targets[p.slot]
+            target = target_for(p.slot)
             foods, missing = [], 0
             for it in p.items:
                 r = cache.recipes.get(it.recipe_id)
@@ -81,22 +47,23 @@ def process_day(day: str, menus: dict, cache: RecipeCache) -> dict:
                 f = analyze(it, r)
                 foods.append(f)
                 if f.suspect and f.role != "excluded":
-                    excluded.setdefault(short_name(f.name), {"name": short_name(f.name), "station": f.station,
-                                                             "hall": info["name"], "reason": f.suspect})
-            condiments = [f for f in foods if f.kind == "condiment" or f.kind == "sauce"]
+                    excluded.setdefault(nice(f), {"name": nice(f), "station": f.station, "hall": info["name"],
+                                                  "reason": f.suspect})
             t0 = time.time()
-            combos = search(foods, t) if foods else []
-            log.info("%s %s %s: %d items, %d combos in %.1fs", day, hall, p.label, len(foods), len(combos), time.time() - t0)
-            period_out = {
-                "key": p.key, "label": p.label, "hours": p.hours, "slot": p.slot, "counts": p.counts,
-                "target": {"kcal": round(t.kcal), "protein": round(t.protein), "carbs": round(t.carbs), "fat": round(t.fat)},
-                "missing_recipes": missing,
-                "status": "ok" if combos else "no_options",
-                "combos": [_combo_payload(c, i + 1, t, p.slot, condiments, combos[0], p.label) for i, c in enumerate(combos)],
-            }
-            hall_out["periods"].append(period_out)
-            plan_periods.append({"hall": hall, "key": p.key, "label": p.label, "slot": p.slot, "counts": p.counts,
-                                 "combos": combos, "titles": [c["title"] for c in period_out["combos"]]})
+            builds = best_builds(foods, p.slot, p.label) if foods else []
+            log.info("%s %s %s: %d items, %d builds in %.2fs", day, hall, p.label, len(foods), len(builds), time.time() - t0)
+            for b in builds:
+                for _, f, _ in b.picks:
+                    if f.rid not in items:
+                        r = cache.recipes.get(f.rid)
+                        items[f.rid] = item_payload(f, r.ingredients if r else "")
+            hall_out["periods"].append({
+                "key": p.key, "label": p.label, "hours": p.hours, "slot": p.slot,
+                "target": _target_payload(target),
+                "on_menu": len(p.items), "missing_recipes": missing,
+                "status": "ok" if builds else "no_options",
+                "builds": [build_payload(b, i + 1, target) for i, b in enumerate(builds)],
+            })
         halls_out.append(hall_out)
     d = Date.fromisoformat(day)
     return {
@@ -104,8 +71,6 @@ def process_day(day: str, menus: dict, cache: RecipeCache) -> dict:
         "weekday": d.strftime("%A"),
         "label": d.strftime("%a, %b ") + str(d.day),
         "halls": halls_out,
-        "plan": daily_plans(plan_periods),
-        "slot_targets": {s: {"kcal": round(t.kcal), "protein": round(t.protein)} for s, t in targets.items() if s in present},
         "excluded": sorted(excluded.values(), key=lambda x: x["name"]),
     }
 
@@ -124,22 +89,22 @@ def run(out_dir: str, cache_path: Optional[str], days: int = 2, today: Optional[
     failures = cache.ensure(ids, today, getter)
     cache.save()
 
-    out_days = [process_day(day, menus[day], cache) for day in dates]
+    items: dict = {}
+    out_days = [process_day(day, menus[day], cache, items) for day in dates]
     payload = {
         "generated_at": now.isoformat(timespec="minutes"),
         "generated_label": now.strftime("%a %b ") + str(now.day) + now.strftime(", %I:%M %p").replace(" 0", " ") + " ET",
         "timezone": C.TIMEZONE,
-        "targets": {
-            "kcal": C.DAILY.kcal, "kcal_lo": C.DAILY.kcal_lo, "kcal_hi": C.DAILY.kcal_hi,
-            "protein": C.DAILY.protein, "carbs": C.DAILY.carbs, "fat": C.DAILY.fat, "fiber": C.DAILY.fiber,
-        },
+        "targets": {k: _target_payload(t) for k, t in C.MEAL_TARGETS.items()},
+        "dv": C.DV,
+        "estimated": sorted(C.ESTIMATED),
         "days": out_days,
+        "items": items,
         "recipe_failures": len(failures),
         "links": {
             "repo": C.REPO_URL,
             "research": C.REPO_URL + "/blob/main/RESEARCH.md",
             "source": "https://dining.unc.edu/menu-hours/",
-            "halls": {k: C.MENU_URL.format(slug=v["slug"], date=today.isoformat()) for k, v in C.HALLS.items()},
         },
     }
     render_site(payload, out_dir)
@@ -157,13 +122,11 @@ def main(argv: Optional[list] = None) -> int:
     today = Date.fromisoformat(args.date) if args.date else None
     payload = run(args.out, args.cache, args.days, today)
 
-    ok = 0
     for day in payload["days"]:
         for hall in day["halls"]:
-            n = sum(len(p["combos"]) for p in hall["periods"])
-            log.info("%s %-14s %-8s %d periods, %d picks %s", day["date"], hall["name"], hall["status"],
+            n = sum(len(p["builds"]) for p in hall["periods"])
+            log.info("%s %-14s %-8s %d periods, %d builds %s", day["date"], hall["name"], hall["status"],
                      len(hall["periods"]), n, hall["message"])
-            ok += hall["status"] == "ok"
     if payload["recipe_failures"]:
         log.warning("%d recipe labels could not be fetched", payload["recipe_failures"])
     # Every hall failing to load means dining.unc.edu is down or blocking us: fail so the last good

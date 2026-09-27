@@ -58,11 +58,12 @@ jobs:
           print("generated", d["generated_at"], "| recipe failures:", d["recipe_failures"])
           for day in d["days"]:
               for h in day["halls"]:
-                  n = sum(len(p["combos"]) for p in h["periods"])
-                  print(f'{day["date"]} {h["name"]:14} {h["status"]:8} {len(h["periods"])} periods, {n} picks {h["message"]}')
-              best = day["plan"]["best"]
-              if best["totals"]:
-                  print(f'  day total: {best["totals"]["protein"]:.0f} g protein, {best["totals"]["kcal"]:.0f} kcal')
+                  n = sum(len(p["builds"]) for p in h["periods"])
+                  print(f'{day["date"]} {h["name"]:14} {h["status"]:8} {len(h["periods"])} periods, {n} builds {h["message"]}')
+                  for p in h["periods"]:
+                      if p["builds"]:
+                          b = p["builds"][0]
+                          print(f'    {p["label"]:12} {b["score"]:3} {b["name"]} ({b["totals"]["protein"]:.0f} g protein, {b["totals"]["kcal"]:.0f} kcal)')
           PY
 
       - uses: actions/configure-pages@v5

@@ -1,12 +1,15 @@
 # HeelFuel research notes
 
-Research done 2026-09-26, before any code was written. It covers three things:
+Research done 2026-09-26, before any code was written, and revised 2026-09-27 after the first round of feedback. It covers four things:
 
 1. **Where the menu data comes from** and exactly what it contains (and doesn't).
-2. **The daily targets** for a "maingaining" lifter and how they're split across meals.
+2. **The per-meal targets** for a lifter eating at maintenance to a slight surplus.
 3. **The scoring rubric**: every factor, how it's dosed, how much it can move a score, and how strong the evidence behind it is.
+4. **How meals are built**: recognizable athlete dishes assembled from every station on the line.
 
-Everything in sections 2 to 5 is implemented in `heelfuel/config.py`, `heelfuel/score.py` and `heelfuel/optimize.py`. If a number here and a number in the code ever disagree, the code is what runs, so fix whichever is wrong.
+What changed after feedback: the first version planned a whole day and leaned on tofu, quinoa and chickpea salads when they scored well. The brief is athlete food (meat, fish, eggs, dairy, fruit, real carbs), judged one meal at a time, with % Daily Values on show. So v2 drops the daily plan, leaves plant-protein swaps out of the builds, scores each meal on MACROS, MICROS and CLEAN, and builds dishes you'd actually make.
+
+Everything in sections 2 to 5 is implemented in `heelfuel/config.py`, `heelfuel/score.py` and `heelfuel/builds.py`. If a number here and a number in the code ever disagree, the code is what runs, so fix whichever is wrong.
 
 ---
 
@@ -66,8 +69,10 @@ These are real rows from the feed, not hypotheticals:
 - **Inconsistent sugar rows:** added sugar larger than total sugar in about 1% of recipes (Waffle: 0 g sugars, 3 g added).
 - **Serving labels that don't match the macros:** "Cilantro Marinated Chicken, ¼ cup: 26 g protein" (that's a 3 to 4 oz portion). HeelFuel treats one serving as "one scoop as served on the line" and always shows the label's stated size next to it.
 - **Zero fiber where there must be some** (brown rice, ½ cup: 0 g).
+- **Impossible micronutrients:** "Salsa, 2 Tbsp: 93 mg iron"; "Seasoned Black Beans, ½ cup: 64 mg iron" (the Daily Value is 18 mg); "Italian Sausage, ½ cup: 61.4 mcg vitamin D" and "Sliced Ham: 13.9 mcg", which only make sense as IU.
+- **Impossible fruit:** "Roasted Cinnamon Apples, ¼ cup: 560 kcal, 23 g fiber".
 
-Section 5.4 lists the plausibility rules that flag the first three kinds of row. Flagged items are left out of recommendations and listed at the bottom of the page, so nothing disappears silently.
+Section 5.5 lists the plausibility rules that catch these rows. Flagged items are left out of recommendations and listed at the bottom of the page, so nothing disappears silently.
 
 ### 1.5 Fetch plan and politeness
 
@@ -95,39 +100,40 @@ You asked me not to ask for personal stats, so the defaults describe a typical m
 | **Added sugar** | 10 g per meal | The 2025-2030 Dietary Guidelines' per-meal cap [DGA 2025]; WHO says under 10% of energy, ideally under 5% [WHO 2015] |
 | **Saturated fat** | under 10% of calories | Unchanged in DGA 2025-2030; lowering it reduces cardiovascular events [Hooper 2020] |
 
-### 2.2 Splitting the day across meals
+### 2.2 One meal at a time
 
-Protein is split to put at least 0.4 g/kg (30 g) in every meal and more in the big ones [Schoenfeld & Aragon 2018]. The old "30 g per meal max" idea is out: 100 g of protein after training produced a larger and longer anabolic response than 25 g [Trommelen 2023], so big lunches and dinners are fine.
+The site never adds up a day. You pick the meal you're about to eat and the score says how good that one meal is on its own. The daily numbers above only set the size of a good meal:
 
-| Slot | Share of calories | Share of protein | Targets on a 4-meal day |
-|---|---|---|---|
-| Breakfast | 24% | 25% | 720 kcal, 40 g protein |
-| Lunch | 33% | 30% | 990 kcal, 48 g protein |
-| Dinner | 33% | 30% | 990 kcal, 48 g protein |
-| Late night | 10% | 15% | 300 kcal, 24 g protein |
+| Meal | Calories | Protein for full credit | Carbs | Fat | Fruit and veg | Sodium allowance | Refined carbs allowed | Share of the Daily Value for full micronutrient credit |
+|---|---|---|---|---|---|---|---|---|
+| Breakfast, continental | 500 to 800 | 35 g | 45 to 100 g | 10 to 30 g | 1 cup | 800 mg | 40 g | 30% |
+| Lunch, dinner, brunch, late lunch, late dinner | 600 to 950 | 42 g | 60 to 120 g | 12 to 35 g | 1.5 cups | 1,000 mg | 50 g | a third |
+| Late night | 300 to 600 | 28 g | 25 to 70 g | 5 to 22 g | 0.5 cup | 600 mg | 25 g | 20% |
 
-When a day has no late-night period at either hall (Saturdays, for example), the shares are renormalized over the meals that exist, so the three meals get bigger and the daily total still aims at 160 g and 3,000 kcal. Late night gets a larger protein share than calorie share on purpose: 27.5 g of protein every night before sleep increased muscle and strength gains over 12 weeks of training compared with a placebo [Snijders 2015].
-
-Carbs, fat, fiber and produce follow the calorie share. Per-meal "good enough" bands: calories within 12% of target (credit then tapers to zero 40% beyond that), protein at least 95% of target, carbs 70 to 135%, fat 60 to 140%. The bands are deliberately loose per meal because the day is what counts: the daily total at the top of the page is where you check 160 g and the calorie range.
+- **Protein:** at least 0.4 g/kg per meal, up to about 0.55 g/kg for the bigger ones [Schoenfeld & Aragon 2018], so 30 to 41 g for a 75 kg lifter; 42 g is the top of that range for lunch and dinner. There's no hard ceiling: 100 g of protein after training produced a larger and longer anabolic response than 25 g [Trommelen 2023]. Late night is sized to the 27.5 g of pre-sleep protein that increased muscle and strength gains over 12 weeks [Snijders 2015].
+- **Calories:** a main meal is roughly a third of a 2,800 to 3,200 kcal day, with a wide band on purpose: one meal doesn't have to be exact when you're the one deciding what else you eat.
+- **Carbs and fat** follow from the calories, with the fat floor from 2.1.
+- **Sodium:** about a third of a 3,000 mg lifter's allowance per main meal (2.1 and 3.9).
 
 ---
+
+## 3. Scoring rubric---
 
 ## 3. Scoring rubric
 
 ### 3.1 How a meal is scored
 
-Every candidate meal (a set of items with servings) gets a score from 0 to 100:
+Every candidate meal (a set of items with servings) gets a score out of 100 in three parts, shown on the page as three bars:
 
 ```
-score = 100 x (FIT + QUALITY + BONUSES - PENALTIES + REALISM) / 95.25     (shown capped at 100)
+score = MACROS (35) + MICROS (35) + CLEAN (30) + dish bonus (up to 3)     (shown capped at 100)
 ```
 
-- **FIT (max 60)** is how well the meal hits its slot's targets. These are your stated goals, so they aren't discounted by evidence.
-- **QUALITY (max 31.25 effective)** rewards fiber, produce, minimally processed food, micronutrients, protein quality and carb quality.
-- **PENALTIES** are dose-scaled: each one starts at zero, grows with the amount present, and has a cap. Additive penalties are per item and grow with servings of that item (the second and third servings count half as much as the first).
-- **REALISM** is not a health factor: it rewards meals you'd actually assemble (a chef's plate from one station, a bowl, a salad) and costs points for running between five lines or pairing yogurt with black beans (section 5.3). It's in the score so the top pick is something you'd eat, not an optimizer's grab bag.
-- 95.25 = 60 + 31.25 + the 4-point meal-format bonus, so a perfect, recognizable meal scores 100. Oily fish, pre-sleep protein and chef pairings can push past 100; the page caps the display at 100, but ranking uses the uncapped number so near-ties still sort sensibly.
-- Every QUALITY, BONUS and PENALTY term is multiplied by an **evidence weight**:
+- **MACROS (35)** is how well the meal hits its targets from 2.2: protein 18, calories 8, carbs 5, fat 4. These are your stated goals, so they aren't discounted by evidence.
+- **MICROS (35)** is 30 points for % Daily Value coverage across ten nutrients plus 5 for fruit and vegetables (3.6 and 3.7).
+- **CLEAN (30)** is 15 points for the share of calories that isn't ultra-processed (3.11), plus 15 points minus the dose-scaled penalties (3.8 to 3.18), floored at zero.
+- **Dish bonus** is not a health factor: +1 for each item that belongs to the dish (the burrito bowl's pico and beans, the power plate's sides from the protein's own station), capped at 3, so ties go to the build that reads like a real dish. Ranking uses the uncapped number.
+- Every penalty is multiplied by an **evidence weight**:
 
 | Grade | Weight | Meaning |
 |---|---|---|
@@ -141,25 +147,19 @@ This is how "factor in the weak claims, but weight them less" is implemented: a 
 
 ### 3.2 Every factor at a glance
 
-Effective max = raw points x evidence weight. "Per meal" allowances scale with the slot's share of the day.
+Effective max = raw points x evidence weight. "Per meal" allowances come from the table in 2.2.
 
 | # | Factor | Measured as | Dose rule | Raw max | Grade | Effective max |
 |---|---|---|---|---|---|---|
-| F1 | Protein amount | protein vs slot target | full at 95% of target, curve `(ratio / 0.95)^1.6` below; past 130% of target, 1 point per extra 10% (cap 6) because extra protein crowds out training carbs | 28 | (target) | 28 |
-| F2 | Calories | kcal vs slot target | full within +/-12%, linear to zero 40% beyond that band | 14 | (target) | 14 |
-| F3 | Carbs | carbs vs slot target | full at 70-135%, curve below, linear taper above | 12 | (target) | 12 |
-| F4 | Fat | fat vs slot target | full at 60-140% | 6 | (target) | 6 |
-| Q1 | Fiber | g vs slot share of 40 g | linear to target | 8 | A | 8.0 |
-| Q2 | Fruit and vegetables | estimated cups vs slot share of 6 cups/day | linear to target | 7 | A | 7.0 |
-| Q3 | Minimally processed food | calorie-weighted share of non-ultra-processed items (3.11) | linear | 8 | B+ | 6.4 |
-| Q4 | Label micronutrients | potassium, calcium, iron, vitamin D vs slot share of the RDA/AI | weighted average, capped per nutrient | 6 | B | 3.9 |
-| Q5 | Estimated micronutrients | magnesium, zinc, vitamin C, vitamin A, EPA+DHA (3.7) | same | 4 | C | 1.4 |
-| Q6 | Protein quality | protein-weighted digestibility/amino-acid score proxy | linear to 0.9 | 3 | B | 1.95 |
-| Q7 | Carb quality | share of carb grams from whole grains, legumes, fruit, veg, potatoes, oats, dairy | linear | 4 | B | 2.6 |
-| B1 | Oily fish | estimated EPA+DHA | linear to 1 g | 4 | B | 2.6 |
-| B2 | Slow protein before bed | late-night meal with 10 g+ protein from cottage cheese, Greek yogurt or milk | on/off | 3 | B | 1.95 |
+| M1 | Protein | g vs the meal's target | `(g / target)^1.3` up to full credit; past 160% of target, 10 points per extra 100% (cap 5), because a plate of only chicken crowds out the carbs you asked for | 18 | (target) | 18 |
+| M2 | Calories | kcal vs the meal's band | full inside the band, linear to zero 35% of the band's middle outside it | 8 | (target) | 8 |
+| M3 | Carbs | g vs band | full inside, `(g / low)^1.2` below, linear taper above | 5 | (target) | 5 |
+| M4 | Fat | g vs band | full inside, linear below and above | 4 | (target) | 4 |
+| V1 | % Daily Value | fiber, potassium, iron, calcium, vitamin D (label) and magnesium, zinc, vitamin C, vitamin A, EPA+DHA (estimated), each capped at the meal's share of the Daily Value | weighted average; label-measured nutrients weigh more (fiber and potassium 1.0, vitamin C 0.9, iron, magnesium and zinc 0.8, calcium 0.7, vitamins D and A 0.6, EPA+DHA 0.5) | 30 | A to C | 30 |
+| V2 | Fruit and vegetables | estimated cups vs 1, 1.5 or 0.5 cups | linear to target | 5 | A | 5 |
+| C1 | Minimally processed | calorie share of the meal that isn't ultra-processed (3.11) | linear | 15 | B+ | 15 |
 | P1 | Added sugar | g above 10 g per meal | 0.35 per g, cap 10 | 10 | A | 10.0 |
-| P2 | Sodium | mg above the meal's share of 3,000 mg (+200 mg grace) | 1 per 200 mg, cap 8 | 8 | B | 5.2 |
+| P2 | Sodium | mg above the meal's allowance (+200 mg grace) | 1 per 200 mg, cap 8 | 8 | B | 5.2 |
 | P3 | Saturated fat | g above 10% of the meal's calories | 0.3 per g, cap 5 | 5 | B | 3.25 |
 | P4 | Trans fat | label trans fat from industrial sources (partially hydrogenated, hydrogenated or interesterified oils, shortening); dairy and meat trans fat counts at 10% | 3 per g, +2 for PHO, cap 8 | 8 | A | 8.0 |
 | P5 | Processed meat | estimated grams of cured/processed meat | 3.5 per 50 g, cap 7 | 7 | B+ | 5.6 |
@@ -169,48 +169,48 @@ Effective max = raw points x evidence weight. "Per meal" allowances scale with t
 | P9 | Emulsifiers | CMC/cellulose gum, polysorbate 80, carrageenan (2 each); mono- and diglycerides, DATEM (1 each) | cap 6 | 6 | C | 2.1 |
 | P10 | Non-sugar sweeteners | sucralose, aspartame, acesulfame K, saccharin | 2 each, cap 4 | 4 | C | 1.4 |
 | P11 | Refined seed oils | share of calories from items where soybean/canola/corn/cottonseed/sunflower oil is a top-3 ingredient, or that are fried | 4 x share | 4 | D | 0.6 |
-| P12 | High glycemic load | g of refined-grain and sugary carbs above 45 g | 1 per 15 g, cap 5 | 5 | C | 1.75 |
+| P12 | High glycemic load | g of refined-grain and sugary carbs above the meal's allowance | 1 per 15 g, cap 5 | 5 | C | 1.75 |
 | P13 | Dairy and acne | cups of milk or yogurt (cheese and cottage cheese count half) | 0.8 per cup, cap 2 | 2 | C | 0.7 |
 | P14 | Phosphate additives | items with added phosphates | 0.5 each, cap 2 | 2 | D | 0.3 |
 | P15 | Cosmetic colorants | caramel color | 1 per item, cap 2 | 2 | D | 0.3 |
 | P16 | "Bloat" sodium spike | mg above 1,500 in one sitting | 1 per 300 mg, cap 3 | 3 | D | 0.45 |
-| R1 | Recognizable meal | the items add up to a plate, bowl, salad, sandwich, pasta, pizza, breakfast plate or yogurt bowl | on/off | +4 | (practical) | +4 |
-| R2 | Chef pairing | the carb, and separately the vegetable, come from the main protein's own station | per part | +2 each | (practical) | +4 |
-| R3 | Extra stations | stations beyond one and a half (salad bar, hummus bar, fruit and drinks count half; extras count half) | per station | -2.5 each | (practical) | - |
-| R4 | Clashes | unrelated starches (-1.5), proteins from two hot lines (-1.5), tofu with meat (-1.5), a yogurt or oatmeal base with beans, rice, meat or raw veg (-8, effectively ruled out) | per clash | - | (practical) | - |
-| R5 | Simplicity | more than four foods | -0.5 each | - | (practical) | - |
+
+The penalties come out of CLEAN's 15-point base, so a meal can lose at most 15 there however many flaws it stacks up; the whole-food half of CLEAN is separate.
+
+Dropped in v2, because the Daily Value coverage now does their job or the brief changed: the v1 protein-quality and carb-quality terms, the oily-fish and pre-sleep-protein bonuses (omega-3 and late-night protein are now part of V1 and M1), and the realism terms (replaced by building real dishes, section 5).
 
 The sections below justify each row.
 
-### 3.3 Protein amount, distribution and timing (F1, B2): grade A
+### 3.3 Protein amount, distribution and timing (M1): grade A
 
 - Protein supplementation increases gains in muscle size and strength with training, with no further benefit past about 1.6 g/kg/day on average; the upper confidence bound is 2.2 g/kg [Morton 2018].
-- Per meal: 0.4 g/kg across at least four meals reaches a 1.6 g/kg minimum; up to 0.55 g/kg per meal for 2.2 g/kg [Schoenfeld & Aragon 2018]. For 75 kg that's 30 g minimum, 40+ g for the main meals.
-- There's no hard per-meal ceiling: 100 g produced a bigger and longer response than 25 g [Trommelen 2023]. So F1 only trims points past 130% of target (1 point per extra 10%), and only because a big protein surplus crowds out the carbs you asked for. In testing, without that trim the daily plan drifted to 215 g protein and 320 g carbs; with it, about 190 g and 360 g.
-- Pre-sleep protein: 27.5 g of casein nightly for 12 weeks increased muscle and strength gains versus placebo [Snijders 2015]. Cottage cheese, Greek yogurt and milk are the slow-digesting options on the line, hence bonus B2 for the late-night slot.
+- Per meal: 0.4 g/kg across at least four meals reaches a 1.6 g/kg minimum; up to 0.55 g/kg per meal for 2.2 g/kg [Schoenfeld & Aragon 2018]. For 75 kg that's 30 g minimum, 40+ g for the main meals, which is where the 35, 42 and 28 g targets in 2.2 come from.
+- There's no hard per-meal ceiling: 100 g produced a bigger and longer response than 25 g [Trommelen 2023]. So M1 only trims points past 160% of the target, and only because a plate of nothing but meat crowds out the carbs you asked for.
+- Pre-sleep protein: 27.5 g of casein nightly for 12 weeks increased muscle and strength gains versus placebo [Snijders 2015]. Greek yogurt parfaits, cottage cheese and milk show up in the late-night builds for this reason, through the protein target rather than a separate bonus.
 
-### 3.4 Protein quality (Q6): grade B
+### 3.4 Protein sources: meat, fish, eggs and dairy, by request
 
-Plant proteins score lower on digestibility and essential amino acids (the FAO DIAAS method [FAO 2013]) and produce a smaller acute muscle-building response per gram [van Vliet 2015]. But when total protein is high the long-run difference shrinks or disappears: soy vs animal supplements produced the same strength and lean-mass gains [Messina 2018], and vegans eating 1.6 g/kg gained muscle like protein-matched omnivores [Hevia-Larraín 2021]. So quality is a small term (1.95 points). Proxy scores: meat, fish, eggs, dairy 1.0; soy 0.9; pea/other legumes 0.7; grains 0.55.
+Builds take their protein from meat, fish, eggs and dairy only; tofu, tempeh, "chik'n", vegan swaps, quinoa, lentils and chickpea salads are left out of every slot. That's a preference call, not an evidence call, and it's worth being honest about: plant proteins score lower on digestibility and essential amino acids (the FAO DIAAS method [FAO 2013]) and produce a smaller acute muscle-building response per gram [van Vliet 2015], but when total protein is high the long-run difference shrinks or disappears: soy vs animal supplements produced the same strength and lean-mass gains [Messina 2018], and vegans eating 1.6 g/kg gained muscle like protein-matched omnivores [Hevia-Larraín 2021]. The brief asked for athlete food, so that's what the builds are.
 
-### 3.5 Calories (F2) and carbohydrate amount and quality (F3, Q7, P12)
+### 3.5 Calories (M2) and carbohydrate amount and quality (M3, P12)
 
 - Calories are a target, not a quality factor. Too few and you don't recover or grow; too many and the "slight surplus" becomes a bulk.
-- Carbs are scored against target (F3), then on where they come from (Q7). Whole grains (dose-response reductions in cardiovascular disease, cancer and all-cause mortality [Aune 2016]), legumes, fruit, vegetables, potatoes and oats count as quality carbs; refined grains and sugars don't.
+- Carbs are scored against the meal's band (M3), and where they come from matters through P12 and the whole-food share. Whole grains (dose-response reductions in cardiovascular disease, cancer and all-cause mortality [Aune 2016]), legumes, fruit, vegetables, potatoes and oats count as quality carbs; refined grains and sugars above the meal's allowance cost a little.
 - Refined, high-glycemic-load meals get a small C-grade penalty (P12). Two small RCTs in young men found low-glycemic-load diets reduced acne lesions [Smith 2007; Kwon 2012]. Real, but small and short, hence C.
 
-### 3.6 Fiber (Q1) and fruit and vegetables (Q2): grade A
+### 3.6 Fiber (V1) and fruit and vegetables (V2): grade A
 
 - Fiber: the highest fiber eaters had 15 to 30% lower all-cause and cardiovascular mortality, coronary heart disease, stroke, type 2 diabetes and colorectal cancer than the lowest; dose-response curves say 25 to 29 g/day is adequate and more may be better [Reynolds 2019].
 - Fruit and vegetables: dose-response benefits up to about 800 g/day [Aune 2017].
 - Skin (the looksmaxxing angle, with actual data): increasing fruit and vegetable intake visibly shifted skin toward yellow/red within 6 weeks, and those carotenoid-driven color changes are rated as healthier and more attractive [Whitehead 2012; Stephen 2011]. That's one more reason produce is weighted heavily.
 - Produce is measured in estimated cups (1 cup of cooked vegetables or fruit = 1; raw leafy greens count half), since the feed has no gram weights.
 
-### 3.7 Micronutrients (Q4 measured, Q5 estimated)
+### 3.7 Micronutrients as % Daily Value (V1)
 
-- **Measured (Q4, grade B):** potassium (AI 3,400 mg; higher intake lowers blood pressure [Aburto 2013] and offsets sodium's effects), calcium (1,000 mg), iron (8 mg) and vitamin D (15 mcg). Vitamin D insufficiency is common in athletes and matters for bone, muscle and immune function [Owens 2018].
-- **Estimated (Q5, grade C because they're estimates):** magnesium (400 mg), zinc (11 mg), vitamin C (90 mg), vitamin A (900 mcg RAE, carotenoids) and EPA+DHA (500 mg). Estimated from a table of USDA FoodData Central values for ~50 whole foods (salmon, beef, spinach, black beans, peppers...) matched by name and scaled by the serving. The page labels these "est.".
-- Why these nutrients, in gym terms: zinc deficiency lowers testosterone and repletion restores it, but extra zinc doesn't raise normal levels [Prasad 1996]. Vitamin D raised testosterone in deficient men in one trial [Pilz 2011] and did nothing in a larger, better trial [Lerchbaum 2019]. So these are scored as "don't be deficient", never as testosterone boosters. Vitamin C is required for collagen synthesis and is concentrated in skin [Pullar 2017].
+- **The yardstick is the FDA label's Daily Value**, the same %DV column UNC's own nutrition panel prints: fiber 28 g, potassium 4,700 mg, iron 18 mg, calcium 1,300 mg, vitamin D 20 mcg, magnesium 420 mg, zinc 11 mg, vitamin C 90 mg, vitamin A 900 mcg RAE, protein 50 g [21 CFR 101.9]. EPA+DHA has no Daily Value; many organizations recommend roughly 250 to 500 mg a day [Kris-Etherton 2009], and HeelFuel uses 500 mg and labels it as a target rather than a DV.
+- **Per meal, not per day:** a main meal gets full credit for a nutrient at a third of its Daily Value (breakfast 30%, late night 20%), and credit is capped there, so a meal can't coast on 300% of one vitamin. The page shows the real percentage anyway ("Vitamin C 111%") because that's the number you'd want to know.
+- **Measured vs estimated:** fiber, potassium, iron, calcium and vitamin D come from UNC's labels. Magnesium, zinc, vitamin C, vitamin A and EPA+DHA aren't on the labels, so they're estimated from a table of USDA FoodData Central values for about 50 whole foods (salmon, beef, spinach, black beans, peppers...) matched by name and scaled by the serving, and marked with an asterisk on the page. Measured nutrients get more weight in the average (3.2).
+- Why these nutrients, in gym terms: potassium offsets sodium and lowers blood pressure [Aburto 2013]; vitamin D insufficiency is common in athletes and matters for bone, muscle and immune function [Owens 2018]; zinc deficiency lowers testosterone and repletion restores it, but extra zinc doesn't raise normal levels [Prasad 1996]; vitamin D raised testosterone in deficient men in one trial [Pilz 2011] and did nothing in a larger, better trial [Lerchbaum 2019]. So these are scored as "don't be deficient", never as testosterone boosters. Vitamin C is required for collagen synthesis and is concentrated in skin [Pullar 2017].
 
 ### 3.8 Added sugar (P1): grade A
 
@@ -226,11 +226,11 @@ WHO recommends under 10% of energy from free sugars, ideally under 5% [WHO 2015]
 - Saturated fat (grade B): cutting it reduced combined cardiovascular events by 17% in long-term RCTs (moderate-quality evidence), with bigger cholesterol drops giving bigger benefits [Hooper 2020]. Gym culture is split on this; the penalty only applies above 10% of the meal's calories and caps at 3.25.
 - Trans fat (grade A): artificial trans fat is the one fat with no safe intake, and partially hydrogenated oils are still in a few products on the line (chocolate sprinkles, Froot Loops, coffee creamers). Industrial label trans fat costs 3 points per gram; a PHO ingredient costs 2 more. Trans fat that comes from cheese, milk or beef (vaccenic acid) is a different molecule and a dose story, not a no-safe-dose story, so it counts at a tenth: the 1 g of trans fat on Cheddar-Chive Mashed Potatoes is from the cheddar and costs about 0.3 points, not 3.
 
-### 3.11 Ultra-processing (Q3): grade B+
+### 3.11 Ultra-processing (C1): grade B+
 
 - The strongest single piece of evidence: in an inpatient crossover RCT (two weeks on each diet), people ate about 500 kcal/day more on an ultra-processed diet whose offered meals were matched to the unprocessed diet for calories, energy density, macros, sugar, sodium and fiber, and gained 0.9 kg [Hall 2019]. A 2025 8-week crossover RCT found double the weight loss on minimally processed vs ultra-processed diets that both followed healthy guidelines [Dicken 2025]. An umbrella review found UPF exposure associated with 32 adverse outcomes, with convincing evidence for cardiovascular mortality and type 2 diabetes [Lane 2024].
 - Relevance for a lifter in a surplus: UPF makes it easier to overshoot, so the "slight surplus" turns into fat gain.
-- How it's measured: NOVA defines ultra-processed foods by ingredients "of no or rare culinary use" (flavors, flavor enhancers, colors, emulsifiers, non-sugar sweeteners, thickeners, glucose syrups, hydrogenated oils, protein isolates) [Monteiro 2019]. Each item gets a 0 to 1 processing score from weighted marker counts in its ingredient text. "Natural flavor" and simple gums count half; three or more full markers is fully ultra-processed. Q3 is the calorie-weighted share of the meal that is not ultra-processed.
+- How it's measured: NOVA defines ultra-processed foods by ingredients "of no or rare culinary use" (flavors, flavor enhancers, colors, emulsifiers, non-sugar sweeteners, thickeners, glucose syrups, hydrogenated oils, protein isolates) [Monteiro 2019]. Each item gets a 0 to 1 processing score from weighted marker counts in its ingredient text. "Natural flavor" and simple gums count half; three or more full markers is fully ultra-processed. C1 is the calorie-weighted share of the meal that is not ultra-processed.
 - Scratch-cooked dishes are disaggregated the way NOVA studies handle mixed dishes. UNC's recipes list their components in descending order by weight, each with its own sub-ingredients ("CANNED BEAN BLACK [...], WATER, TOMATO, ..., BASE VEGETABLE [maltodextrin, hydrolyzed corn protein, yeast extract, ...]"). Each component is scored on its own markers and weighted by its position (weights 1, 0.6, 0.36... normalized), so a flavor base that is 2% of a pot of black beans makes the dish about 2% ultra-processed, not 100%. A single purchased product (cottage cheese with carrageenan and mono- and diglycerides; a pancake mix) is scored on its own list, where those additives mean exactly what NOVA says they mean.
 
 ### 3.12 Synthetic dyes (P7, P8): grade C
@@ -260,9 +260,9 @@ IARC classifies processed meat as a group 1 carcinogen: each 50 g/day raises col
 - Fried food (grade B): highest vs lowest fried-food intake is associated with 28% more major cardiovascular events [Qin 2021].
 - Seed oils (grade D). This is the big gym/looksmaxxing claim, and it's the one where the evidence points the other way. RCTs that raised linoleic acid did not raise inflammatory markers [Johnson & Fritsche 2012], and higher linoleic acid levels in blood and fat tissue are associated with less cardiovascular disease and mortality across 30 cohorts [Marklund 2019]. The strongest counterpoint is a reanalysis of the 1968-73 Minnesota Coronary Experiment [Ramsden 2016]. So seed oils get a D-grade nudge (max 0.6 points), mainly where they're doing the frying. This matches the fact-check done for Real Food UNC: the defensible argument is whole-food displacement, not "poison".
 
-### 3.17 Inflammation and omega-3 (B1)
+### 3.17 Inflammation and omega-3 (V1)
 
-EPA and DHA from oily fish partly inhibit several inflammatory pathways [Calder 2017], and a small RCT found omega-3 supplements reduced acne lesions [Jung 2014]. Dietary inflammatory indices [Shivappa 2014] boil down to the same things already scored: fiber, produce, omega-3s up; refined carbs, processed and fried food down. B1 gives up to 2.6 points for about 1 g of estimated EPA+DHA (roughly a 4 oz salmon portion).
+EPA and DHA from oily fish partly inhibit several inflammatory pathways [Calder 2017], and a small RCT found omega-3 supplements reduced acne lesions [Jung 2014]. Dietary inflammatory indices [Shivappa 2014] boil down to the same things already scored: fiber, produce, omega-3s up; refined carbs, processed and fried food down. EPA+DHA is one of the ten V1 nutrients, so a salmon or shrimp build earns it through MICROS.
 
 ### 3.18 Skin, acne and dairy (P12, P13)
 
@@ -271,64 +271,78 @@ EPA and DHA from oily fish partly inhibit several inflammatory pathways [Calder 
 
 ### 3.19 Claims checked and deliberately not scored
 
-- **"Soy lowers testosterone"**: a meta-analysis of clinical studies found no effect of soy or isoflavones on testosterone, free testosterone or estrogen in men [Reed 2021]. Tofu and edamame are not penalized.
+- **"Soy lowers testosterone"**: a meta-analysis of clinical studies found no effect of soy or isoflavones on testosterone, free testosterone or estrogen in men [Reed 2021]. Soy isn't penalized in the score; tofu is left out of the builds only because the brief is meat-and-fruit athlete meals (3.4).
 - **"Low-fat diets tank testosterone"**: partly true. Across 6 intervention studies (206 men), low-fat diets produced small but significant drops in total and free testosterone versus higher-fat diets (standardized mean difference about -0.38) [Whittaker & Wu 2021; a corrigendum was issued in 2026]. Handled by the fat floor in F4, not by rewarding extra fat.
 - **General bloating from beans and cruciferous vegetables**: FODMAPs matter clinically in IBS [Gibson & Shepherd 2010], but for everyone else the fiber and micronutrient benefits win, so there's no penalty. If beans bother you, that's a personal filter for later.
-- **Meal timing myths** (eating late makes you fat): no. Total intake matters; the late-night slot exists and is rewarded for protein. Sleep effects of heavy late meals are weakly supported [St-Onge 2016].
+- **Meal timing myths** (eating late makes you fat): no. Total intake matters; late night gets its own smaller target and is rewarded for protein. Sleep effects of heavy late meals are weakly supported [St-Onge 2016].
 
 ---
 
 ## 4. Holistic, not absolutist
 
-1. **Nothing is excluded for an additive or a gram of sugar.** The only items left out of recommendations are (a) rows whose nutrition data is implausible (section 5.4), and (b) things that aren't meal components: condiments and sauces, desserts, candy and ice cream toppings, soda and juice. Cereal is only considered at breakfast.
+1. **Nothing is excluded for an additive or a gram of sugar.** What never appears in a build: rows whose nutrition data is implausible (5.5); things that aren't meal components (desserts, candy, ice cream toppings, soda and juice; condiments only appear in their flavor slots, like salsa on a burrito bowl); the Stress Less allergy-friendly pantry, which is there for people who need it; plant-protein swaps (3.4, a preference); and processed meat as the main protein, since the brief asks for low-processed meals. Ham or bacon inside an omelet still counts through P5 instead.
 2. **Penalties scale with dose.** 1 g of added sugar costs 0, and so does 9 g; 25 g costs 5.25 raw points. 1,200 mg of sodium at lunch costs almost nothing; 2,400 mg costs about 4.
-3. **Penalties scale with evidence.** One synthetic dye costs 1.05 raw points (1.1 on the 100-point scale). Missing 40% of the protein target costs about 15. So "has Yellow 5 but best protein option" wins, as it should.
-4. **Caps stop any one flaw from dominating.** Even the strongest penalty (added sugar) is capped at 10 points.
-5. **The page says what cost points.** Every recommendation lists its tradeoffs ("Sodium 1,690 mg, 73% of the 2,300 mg daily reference", "Yellow 5 + Blue 1 in Spinach Wrap") so you can make your own call.
+3. **Penalties scale with evidence.** One synthetic dye costs 1.05 points. Missing half the protein target costs about 10. So "has Yellow 5 but best protein option" still wins, as it should.
+4. **Caps stop any one flaw from dominating.** Even the strongest penalty (added sugar) is capped at 10 points, and all of them together can take at most 15.
+5. **The page says what cost points.** Every build lists its tradeoffs ("Salty: 2,325 mg sodium (101% of a day); drink water", "Dyes: Yellow 5 in Spinach Wrap") so you can make your own call.
 
 ### 4.1 Worked examples (real menus, Monday 2026-09-28)
 
 | Meal | kcal | Protein | Notable | Score |
 |---|---|---|---|---|
-| Chase lunch, Simply Prepared: 2x Chicken Shawarma, 3x Saffron Rice, 2x Roasted Cauliflower, 2x Green Beans, skim milk | 880 | 72 g | Fit 60/60, quality 29.4/31.25, chef plate +8, dairy nudge -0.28 | 100 (102 uncapped) |
-| Lenoir lunch: 2x Halal Honey BBQ Chicken, 2x Cheddar-Chive Mashed Potatoes, 2x Sauteed Kale & Brussels Sprouts | 940 | 78 g | 24 g added sugar from the BBQ sauce: -4.9. Still a strong pick, flagged on the page | 93 |
-| Lenoir dinner: 2x Cajun Chicken, 2x Potato Hash, 2x Sauteed Spinach | 900 | 64 g | 2,540 mg sodium: -4.4, plus -0.45 "bloat" | 91 |
-| The shawarma plate with one scoop of rice swapped for the Spinach Wrap | 1,090 | 78 g | Yellow 5, Yellow 6 and Blue 1 (-3.15, the dye cap), CMC and mono- and diglycerides (-1.05), +830 mg sodium, and a second station | 88 |
-| Chase late lunch: Classic Cheeseburger + Shoestring Fries | 830 | 28 g | Protein at half the target, 3,230 mg sodium, fried, 4 g fiber | 46 |
-| Chase lunch: 2 slices IP3 Pepperoni Pizza | 500 | 24 g | Half the protein and calories, processed meat, BHA in the pepperoni | 36 |
+| Chase lunch, Shrimp and Mushroom Scampi Power Plate: 2x scampi, 2x brown rice, sauteed spinach, steamed broccoli, cantaloupe, skim milk | 915 | 52 g | Every macro in band, 140% of the day's vitamin A and 111% of vitamin C, nothing ultra-processed | 99 |
+| Chase lunch: 2x Chicken Shawarma, 2x Saffron Rice, sauteed spinach, roasted cauliflower, hummus | 760 | 62 g | Clean and on target; loses a little on micros without fruit | 93 |
+| The same bowl with the Spinach Wrap instead of rice | 880 | 66 g | Yellow 5, Yellow 6 and Blue 1 (the dye cap, -3.15), CMC and mono- and diglycerides (-1.05), +830 mg sodium (-2.5), and a third of the calories now ultra-processed (-5 whole-food points) | 82 |
+| Lenoir lunch: 2x Halal Honey BBQ Chicken, 2x Cheddar-Chive Mashed Potatoes, kale and Brussels sprouts, collards | 930 | 78 g | 24 g added sugar from the BBQ sauce (-4.9). Still a strong meal, flagged on the page | 83 |
+| Lenoir dinner, Blackened Tilapia Burrito Bowl | 740 | 69 g | 2,325 mg sodium (-3.7, plus -0.4 "bloat"); everything else is excellent | 95 |
+| Chase: Classic Cheeseburger + Shoestring Fries | 830 | 28 g | Two-thirds of the protein target, 3,230 mg sodium, fried, 4 g fiber | 53 |
+| Chase: 2 slices IP3 Pepperoni Pizza | 500 | 24 g | Half the protein, processed meat, BHA in the pepperoni, almost no micronutrients | 54 |
 
-The dyed wrap costs a few points, the sugary sauce costs about five, and a meal that simply doesn't deliver protein costs forty. That ordering is the point.
+The dyed wrap costs about ten points, the sugary sauce about five, and a meal that simply doesn't deliver protein or micronutrients costs forty. That ordering is the point.
 
 ---
 
 ## 5. Building meals
 
-### 5.1 Item roles
+v1 let an optimizer assemble any combination of items, and even with realism terms it produced plates nobody would build. v2 starts from dishes and fills them.
 
-Each item gets one role from its name, station and macros:
+### 5.1 Dishes
 
-| Role | Examples | Used as |
+Each dish is a list of slots, each with a filter, a count and a serving range. Items can come from any station.
+
+| Dish | Periods | Slots (required in bold) |
 |---|---|---|
-| protein | grilled chicken, tilapia, tofu, eggs, Greek yogurt, cottage cheese, deli turkey | the meal's anchor, 1 to 2 kinds. At lunch and dinner, Greek yogurt and cottage cheese count as a side instead |
-| carb | rice, potatoes, pasta, oatmeal, bread, wraps, beans, quinoa, cereal (breakfast only) | 0 to 2 kinds |
-| produce | vegetables, salad greens, fruit | 0 to 2 kinds, 3 when they come from the protein's own station, plus a fruit |
-| extra | milk, cheese, guacamole, hummus, nuts and seeds, a pasta sauce | 0 to 1 |
-| mixed | burgers, sandwiches, pizza, pasta bakes, burrito bowls | anchor if it brings real protein, otherwise a carb |
-| excluded | condiments, desserts, candy, snack chips, soda/juice, flagged data | never recommended; condiments come back as flavor suggestions |
+| Loaded Scramble Plate | breakfast, late night | **eggs**, a carb (potatoes, toast or oats), up to 2 veg that go in eggs, salsa or hot sauce, up to 2 fruits, yogurt or milk |
+| Greek Yogurt Power Parfait | breakfast, late night | **yogurt or cottage cheese**, **1 to 2 fruits**, seeds, nuts or granola, eggs or milk on the side |
+| Breakfast Burrito | breakfast, late night | **tortilla**, **eggs**, potatoes, up to 2 veg, cheese, salsa, fruit |
+| Oatmeal (or Grits) Power Bowl | breakfast, late night | **oats or grits**, **1 to 2 fruits**, **eggs or yogurt**, seeds or nuts, milk |
+| Burrito Bowl | lunch, dinner, late night | **rice**, **hot meat that isn't Asian, BBQ, Mediterranean or Italian-seasoned**, beans, **1 to 3 veg**, salsa, guacamole or cheese, fruit |
+| Mediterranean or Shawarma Bowl | lunch, dinner, late night | **grilled meat**, **rice, pita or roasted potatoes**, **1 to 3 veg**, tzatziki or hummus, feta, fruit |
+| Poke Bowl | lunch, dinner, late night | **rice**, **chicken or seafood**, **2 to 3 raw veg**, a sushi-bar sauce, avocado, fruit |
+| Power Plate | lunch, dinner, late night | **a hot entree**, **a starch**, **1 to 2 cooked veg**, fruit, milk |
+| Red-sauce Pasta | lunch, dinner, late night | **pasta**, **a tomato or meat sauce**, **meat or fish**, up to 2 veg that go in pasta, parmesan, fruit |
+| Power Salad | lunch, dinner, late night | **greens**, **meat**, hard-boiled eggs, **1 to 3 toppings**, a carb so it's a meal, fruit, seeds or nuts, a vinaigrette |
+| Wrap, Pita or Sandwich | lunch, dinner, late night | **tortilla, pita or bread**, **meat (doubled when it fits)**, **1 to 3 sandwich veg**, cheese, mustard, hummus or hot sauce, fruit |
+| Rice Bowl | lunch, dinner, late night | **rice**, **a saucy hot entree (stir-fry, curry, chili)**, **1 to 2 cooked veg**, sauce, fruit |
+| Burger + Sides | lunch, dinner, late night | **a burger**, raw veg for it, fruit instead of fries, milk |
 
-Portion caps: protein 2 servings (3 for lean portions of 130 kcal or less, 1 for a 450 kcal+ entree or a sandwich); carbs 2 (3 for small scoops of 110 kcal or less, 2 for bread and beans, 1 for a cup or more of beans); vegetables 2 (1 for raw toppings and for servings of 1.5 cups or more); extras 1.
+Brunch gets the lunch dishes and the breakfast dishes. The main protein is always meat, fish, eggs or dairy (3.4) and never processed meat (section 4).
 
 ### 5.2 Search
 
-For each hall and period the optimizer builds a pool of the 10 most protein-dense proteins plus the 4 biggest, 8 carbs, 8 produce items (including 2 fruits) and 6 extras. Each protein also brings along the carbs and vegetables from its own station, so a chef's plate (shawarma, saffron rice, roasted cauliflower) is always reachable even when a salad-bar item looks better on paper. Meals are built in stages: every protein core (one or two proteins with servings), then carb options, then produce options, then an optional extra. After each stage it keeps the best 5 (then 3) partial meals per core plus that core's 2 best own-station pairings. That's 20,000 to 60,000 full meal scores per period, 1 to 5 seconds. The top three must have different main proteins and mostly different plates, so you get three real alternatives instead of one meal with three vegetable swaps.
+For each dish, every slot gets its best few candidates on the line that period (3 to 6, ranked by a quick quality or micronutrient-density score). A beam search fills the slots in order, scoring every partial build with the full rubric and keeping the best 24 (at most 3 per main protein, so different proteins stay alive). That's about 0.03 to 0.4 seconds per period.
 
-### 5.3 Realism rules
+### 5.3 Coherence rules
 
-Hard rules: at most 5 foods plus one extra; breakfast foods (cereal, oatmeal, grits, waffles, pancakes, French toast, granola, biscuits) only at breakfast and late night; no bread next to something that's already a sandwich or burger, and only one bread; one soup; pasta sauce only with pasta; never the same base food twice (two black-bean dishes or two diced chickens is one food, not variety).
+- **Cuisines don't mix.** An item whose name commits it to a cuisine (Mexican: Santa Fe, chipotle, cilantro-lime, enchilada; Asian: teriyaki, Szechuan, curry, sesame; Mediterranean: shawarma, gyro, harissa, tzatziki; Italian: marinara, alfredo, alla vodka, and plain pasta) never shares a build with an item committed to another one. Plain rice, chicken, spinach or fruit goes with anything.
+- Taco meat, pulled BBQ or curry doesn't go on sliced bread or a bagel (a tortilla or pita is fine), fish doesn't go in meat sauce, and composed dishes (enchiladas, pasta bakes, soups, shrimp and grits, deli spreads like tuna salad) aren't used as a bowl's protein.
+- At most 8 items; never the same base food twice; a bagel is one serving and a sandwich takes two slices of bread; the allergy-friendly pantry is skipped.
 
-Scored rules (R1 to R5 in the table): +4 when the meal is a recognizable format, +2 for each part that comes from the main protein's own station, -2.5 per extra hot station (the salad bar, fruit and drinks count half), -1.5 for unrelated starches, proteins from two hot lines or tofu next to meat, -8 for a yogurt or oatmeal base next to beans, rice, meat or raw vegetables, and -0.5 per food beyond four.
+### 5.4 Picking the builds for a period
 
-### 5.4 Data plausibility rules
+Up to five builds per period, sorted by score. The first pass takes different dishes with different main proteins (eggs and yogurt may repeat). The second pass fills the list with other dishes, but never two of the same dish with the same protein, never more than two of one dish, and never one protein item in more than two builds; a third pass lets a thin late menu reuse a protein a third time. Two builds that share 70% of their items count as the same meal, and nothing more than 12 points below the best build is shown just to fill space.
+
+### 5.5 Data plausibility rules
 
 An item is flagged, excluded, and listed at the bottom of the page when any of these hold:
 
@@ -338,21 +352,24 @@ An item is flagged, excluded, and listed at the bottom of the page when any of t
 - Stated calories and 4P + 4C + 9F disagree by more than 50% (for items over 60 kcal).
 - Protein supplies more than 110% of the stated calories.
 - A non-starchy vegetable with more than 30 g carbs or 500 kcal per cup (catches "Baby Carrots, ½ cup: 170 kcal").
+- Fruit with more than 60 g carbs or 300 kcal per cup, dried fruit and baked goods aside (catches "Roasted Cinnamon Apples, ¼ cup: 560 kcal").
 - Zero calories on bread, pasta, rice or a protein.
 
-Label fields that contradict each other are clamped rather than excluded: saturated or trans fat above total fat, fiber above total carbs, added sugar above total carbs ("Roasted Harissa Carrots: 0 g fat, 27 g saturated fat" becomes 0 g). When the added-sugar row is missing, added sugar is estimated from the ingredient list (section 3.8) and the page says it's an estimate.
+Label fields that contradict each other or can't be real are corrected rather than excluded, and the item's nutrition panel says so:
 
-### 5.5 Flavor ideas
-
-The "make it tasty" line only suggests condiments actually on the line that period, with 45 kcal or less, 4 g added sugar or less, and no dyes, matched to the meal: pico, salsa verde or guacamole for bowls, tzatziki for Mediterranean plates, sriracha for tofu, vinegar-based dressing for salads, mustard instead of mayo for sandwiches, hot sauce or salsa for eggs.
+- Saturated or trans fat above total fat, fiber above total carbs, added sugar above total carbs are clamped ("Roasted Harissa Carrots: 0 g fat, 27 g saturated fat" becomes 0 g).
+- More than 10 mg of iron in a serving of anything but a fortified cereal is replaced with a typical 1.2 mg per 100 kcal (at most 4 mg): the salsa's 93 mg becomes 0.1 mg.
+- More than 5 mcg of vitamin D in a food that doesn't naturally carry it (anything but fish, mushrooms, milk, yogurt or cereal) is read as IU and divided by 40: the ham's 13.9 becomes 0.35 mcg.
+- When the added-sugar row is missing, added sugar is estimated from the ingredient list (3.8) and the page says it's an estimate.
 
 ---
 
 ## 6. Limitations
 
 - The nutrition labels are the dining program's recipe calculations, not lab measurements, and the portion on your plate depends on who's serving.
-- Magnesium, zinc, vitamin C, vitamin A and omega-3s are estimates.
+- Magnesium, zinc, vitamin C, vitamin A and omega-3s are estimates, marked with an asterisk.
 - Ingredient text can't tell you how much of an additive is present, only that it is. Dose scaling for additives therefore uses servings of the item, not milligrams.
+- A build assumes every item is still out when you get there. Stations run out, and late periods often serve a smaller line.
 - The targets describe a reference lifter. A 60 kg or 100 kg lifter needs different numbers (they live in `heelfuel/config.py`).
 - Nothing here is medical advice, and allergy handling is not personalized yet: always check the allergen list on the line.
 
@@ -366,6 +383,7 @@ The "make it tasty" line only suggests condiments actually on the line that peri
 - [Baker 2017] Baker LB. Sweating rate and sweat sodium concentration in athletes: a review of methodology and intra/interindividual variability. Sports Med. 2017;47(Suppl 1):111-128. doi:10.1007/s40279-017-0691-5
 - [Bouvard 2015] Bouvard V, Loomis D, Guyton KZ, et al. Carcinogenicity of consumption of red and processed meat. Lancet Oncol. 2015;16(16):1599-1600. doi:10.1016/S1470-2045(15)00444-1
 - [CA AB 418] California Food Safety Act, Assembly Bill 418 (2023): bans brominated vegetable oil, potassium bromate, propylparaben and Red 3 in foods sold in California from 2027.
+- [21 CFR 101.9] Code of Federal Regulations, Title 21, section 101.9: Nutrition labeling of food. Reference Daily Intakes in (c)(8)(iv) and Daily Reference Values in (c)(9), as revised by FDA's 2016 Nutrition Facts label rule.
 - [Calder 2017] Calder PC. Omega-3 fatty acids and inflammatory processes: from molecules to man. Biochem Soc Trans. 2017;45(5):1105-1115. doi:10.1042/BST20160474
 - [Chassaing 2015] Chassaing B, Koren O, Goodrich JK, et al. Dietary emulsifiers impact the mouse gut microbiota promoting colitis and metabolic syndrome. Nature. 2015;519(7541):92-96. doi:10.1038/nature14232
 - [Chassaing 2022] Chassaing B, Compher C, Bonhomme B, et al. Randomized controlled-feeding study of dietary emulsifier carboxymethylcellulose reveals detrimental impacts on the gut microbiota and metabolome. Gastroenterology. 2022;162(3):743-756. doi:10.1053/j.gastro.2021.11.006
@@ -391,6 +409,7 @@ The "make it tasty" line only suggests condiments actually on the line that peri
 - [Johnson & Fritsche 2012] Johnson GH, Fritsche K. Effect of dietary linoleic acid on markers of inflammation in healthy persons: a systematic review of randomized controlled trials. J Acad Nutr Diet. 2012;112(7):1029-1041. doi:10.1016/j.jand.2012.03.029
 - [Juhl 2018] Juhl CR, Bergholdt HKM, Miller IM, et al. Dairy intake and acne vulgaris: a systematic review and meta-analysis of 78,529 children, adolescents, and young adults. Nutrients. 2018;10(8):1049. doi:10.3390/nu10081049
 - [Jung 2014] Jung JY, Kwon HH, Hong JS, et al. Effect of dietary supplementation with omega-3 fatty acid and gamma-linolenic acid on acne vulgaris: a randomised, double-blind, controlled trial. Acta Derm Venereol. 2014;94(5):521-525. doi:10.2340/00015555-1802
+- [Kris-Etherton 2009] Kris-Etherton PM, Grieger JA, Etherton TD. Dietary reference intakes for DHA and EPA. Prostaglandins Leukot Essent Fatty Acids. 2009;81(2-3):99-104. doi:10.1016/j.plefa.2009.05.011
 - [Kwon 2012] Kwon HH, Yoon JY, Hong JS, et al. Clinical and histological effect of a low glycaemic load diet in treatment of acne vulgaris in Korean patients: a randomized, controlled trial. Acta Derm Venereol. 2012;92(3):241-246. doi:10.2340/00015555-1346
 - [Lane 2024] Lane MM, Gamage E, Du S, et al. Ultra-processed food exposure and adverse health outcomes: umbrella review of epidemiological meta-analyses. BMJ. 2024;384:e077310. doi:10.1136/bmj-2023-077310
 - [Lerchbaum 2019] Lerchbaum E, Trummer C, Theiler-Schwetz V, et al. Effects of vitamin D supplementation on androgens in men with low testosterone levels: a randomized controlled trial. Eur J Nutr. 2019;58(8):3135-3146. doi:10.1007/s00394-018-1858-z

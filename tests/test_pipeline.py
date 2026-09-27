@@ -1,14 +1,14 @@
 import json
-import os
 from datetime import date
 
 from conftest import make_getter
 
 from heelfuel import build
-from heelfuel.plan import daily_plans
+
+PAGES = {"chase": "menu_small.html", "top-of-lenoir": "page_not_found.html"}
 
 
-def _run(tmp_path, pages):
+def _run(tmp_path, pages=PAGES):
     out = tmp_path / "site"
     payload = build.run(str(out), str(tmp_path / "recipes.json"), days=1, today=date(2026, 9, 28),
                         getter=make_getter(pages))
@@ -16,16 +16,31 @@ def _run(tmp_path, pages):
 
 
 def test_end_to_end_build(tmp_path):
-    payload, out = _run(tmp_path, {"chase": "menu_small.html", "top-of-lenoir": "page_not_found.html"})
+    payload, out = _run(tmp_path)
     day = payload["days"][0]
     halls = {h["key"]: h for h in day["halls"]}
     assert halls["chase"]["status"] == "ok"
     assert halls["lenoir"]["status"] == "no_menu"
+    assert halls["chase"]["menu_url"].endswith("/locations/chase/?date=2026-09-28")
+
     lunch = next(p for p in halls["chase"]["periods"] if p["label"] == "Lunch")
-    top = lunch["combos"][0]
+    assert lunch["status"] == "ok" and lunch["target"]["kind"] == "main"
+    top = lunch["builds"][0]
     assert top["rank"] == 1 and 0 < top["score"] <= 100
-    assert top["title"] and top["idea"] and top["pros"]
-    assert {m["key"] for m in top["micros"]} >= {"potassium", "iron", "magnesium", "epa_dha"}
+    assert set(top["sub"]) == {"macros", "micros", "clean"}
+    assert top["name"] and top["how"] and top["why"] and top["steps"]
+    assert top["totals"]["protein"] >= 42
+    assert top["dv"]["protein"] == round(100 * top["totals"]["protein"] / 50)
+    assert len(top["chips"]) == 6 and {c["key"] for c in top["chips"]} <= set(payload["dv"])
+
+    # Every item a build points at has a label for the nutrition panel.
+    for p in halls["chase"]["periods"]:
+        for b in p["builds"]:
+            for g in b["steps"]:
+                for it in g["items"]:
+                    assert it["rid"] in payload["items"]
+    shawarma = next(v for v in payload["items"].values() if v["name"] == "Chicken Shawarma")
+    assert shawarma["label"]["protein"] > 0 and shawarma["ingredients"]
 
     html = (out / "index.html").read_text(encoding="utf-8")
     assert "window.HEELFUEL = {" in html
@@ -38,20 +53,15 @@ def test_end_to_end_build(tmp_path):
     assert "Swiss Cheese" in names  # listed on the page instead of silently dropped
 
 
-def test_daily_plan_totals(tmp_path):
-    payload, _ = _run(tmp_path, {"chase": "menu_small.html", "top-of-lenoir": "page_not_found.html"})
-    plan = payload["days"][0]["plan"]
-    best = plan["best"]
-    assert [p["slot"] for p in best["picks"]] == ["breakfast", "lunch", "late_night"]
-    assert abs(best["totals"]["protein"] - sum(p["protein"] for p in best["picks"])) <= 2
-    assert plan["lenoir"]["picks"] == []
-    assert plan["chase"]["picks"] == best["picks"]
-    assert best["bars"][0]["key"] == "protein"
+def test_no_daily_totals_anywhere(tmp_path):
+    payload, _ = _run(tmp_path)
+    assert "plan" not in payload["days"][0]
+    assert set(payload["targets"]) == {"breakfast", "main", "late"}
 
 
 def test_recipe_cache_is_reused(tmp_path):
     calls = []
-    base = make_getter({"chase": "menu_small.html", "top-of-lenoir": "page_not_found.html"})
+    base = make_getter(PAGES)
 
     def counting(url):
         calls.append(url)
@@ -81,20 +91,3 @@ def test_one_hall_down_still_publishes(tmp_path, monkeypatch):
     data = json.loads((tmp_path / "site" / "data" / "latest.json").read_text())
     lenoir = next(h for h in data["days"][0]["halls"] if h["key"] == "lenoir")
     assert lenoir["status"] == "error" and "dining.unc.edu" in lenoir["message"]
-
-
-def test_plan_prefers_variety():
-    from types import SimpleNamespace as NS
-
-    def combo(name, score):
-        f = NS(name=name, role="protein", kind="protein", nutrition=NS(protein=40), rid=name, tags=frozenset())
-        return NS(items=((f, 1),), vec=tuple([700, 40] + [0] * 40), score=score)
-
-    periods = [
-        {"hall": "chase", "key": "lunch", "label": "Lunch", "slot": "lunch", "counts": True,
-         "combos": [combo("Tofu", 99), combo("Chicken", 97)], "titles": ["Tofu plate", "Chicken plate"]},
-        {"hall": "chase", "key": "dinner", "label": "Dinner", "slot": "dinner", "counts": True,
-         "combos": [combo("Tofu", 99), combo("Salmon", 98)], "titles": ["Tofu plate", "Salmon plate"]},
-    ]
-    picks = daily_plans(periods)["best"]["picks"]
-    assert [p["title"] for p in picks] == ["Tofu plate", "Salmon plate"]

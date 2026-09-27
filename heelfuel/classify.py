@@ -299,7 +299,7 @@ def estimate_micros(name: str, qty: float, unit: str, kcal: float, mixed: bool,
         grams = _grams_for(ref, qty * (share if len(refs) > 1 else 1.0), unit, kcal * share * frac / 0.85, ref.kcal < 60,
                            protein_share=protein * (0.9 if ref is refs[0] else 0.3) * (0.8 if mixed else 1.0))
         grams = min(grams, 450.0)
-        if ref.kcal < 60 and not produce:
+        if ref.kcal < 60 and not produce and ref.key not in ("milk", "greek yogurt"):
             grams = min(grams, 40.0)  # "Spinach Wrap" is flour with a little spinach in it
         if ref is refs[0]:
             main_grams = grams
@@ -346,6 +346,11 @@ def suspect_reason(n: Nutrition, qty: float, unit: str, name: str, kind: str, ro
         cups = qty * UNIT_CUPS[unit]
         if cups > 0 and (n.carbs / cups > 30 or kcal / cups > 500):
             return f"{n.carbs / cups:.0f} g carbs and {kcal / cups:.0f} kcal per cup for a vegetable"
+    if role in ("produce", "carb") and FRUIT.search(name) and not re.search(r"raisin|craisin|dried|granola|crisp|cobbler|pie\b|bread|muffin|pancake|waffle|oat", name, re.I) \
+            and unit in UNIT_CUPS:
+        cups = qty * UNIT_CUPS[unit]
+        if cups > 0 and (n.carbs / cups > 60 or kcal / cups > 300):
+            return f"{n.carbs / cups:.0f} g carbs and {kcal / cups:.0f} kcal per cup of fruit"
     if kcal == 0 and role in ("protein", "carb", "extra") and kind not in ("sauce",):
         return "zero calories listed"
     return ""
@@ -434,7 +439,7 @@ CEREAL_BRANDS = _rx(r"cheerios|froot loops|rice krispies|cocoa puffs|lucky charm
 TOPPING = _rx(r"pieces|\bbits\b|crumbles|croutons|sprinkles|crumbs")
 SNACK = _rx(r"\bchips\b|pretzels?|crackers?|popcorn|goldfish")
 CHEESE_ITEM = _rx(r"^(?:shredded |sliced |grated |vegan |vegan sliced |vegan american sliced |fresh )?(?:cheddar |mozzarella |parmesan |feta |provolone |monterey jack |pepper jack |swiss |american |colby |gouda |brie |blue |jack )?(?:cheese)(?: crumbles| slices?)?$|^(?:shredded|sliced) (?:cheddar|mozzarella|swiss|provolone)$")
-NOT_PRODUCE = _rx(r"soup|chowder|bisque|\broll\b|sushi|parmesan|parmigiana|casserole|bake\b|lasagna|fried|tempura|pizza|pasta|\brice\b|bread|wrap|melt|sandwich|burger|quesadilla|taco|burrito")
+NOT_PRODUCE = _rx(r"oatmeal|\boats\b|grits|granola|pancake|waffle|muffin|cobbler|crisp\b|soup|chowder|bisque|\broll\b|sushi|parmesan|parmigiana|casserole|bake\b|lasagna|fried|tempura|pizza|pasta|\brice\b|bread|wrap|melt|sandwich|burger|quesadilla|taco|burrito")
 
 
 def _classify_role(name: str, station: str, n: Nutrition, low: str) -> tuple[str, str, str]:
@@ -474,7 +479,7 @@ def _classify_role(name: str, station: str, n: Nutrition, low: str) -> tuple[str
         return "excluded", "snack", "snack food"
     if TOPPING.search(low):
         return "excluded", "condiment", "topping"
-    if PASTA_SAUCE.search(low):
+    if PASTA_SAUCE.search(low) and not PASTA.search(low):
         return "extra", "sauce", ""
     if FAT_EXTRA.search(low) and f_share >= 0.5:
         return "extra", "fat", ""
@@ -521,9 +526,24 @@ def _classify_role(name: str, station: str, n: Nutrition, low: str) -> tuple[str
     return "excluded", "other", "not a meal component"
 
 
-def sanitize(n: Nutrition) -> tuple[Nutrition, list[str]]:
-    """Clamp label fields that contradict each other (27 g saturated fat in a 0 g fat item)."""
+IRON_FORTIFIED = _rx(r"cereal|flakes|cheerios|krispies|chex|wheaties|mini wheats|grahams|puffs|loops|charms|crunch")
+VIT_D_FOODS = _rx(r"salmon|trout|tuna|sardine|mackerel|herring|mushroom|milk|yogurt|cereal|cheerios|flakes|krispies")
+
+
+def sanitize(n: Nutrition, name: str = "", station: str = "") -> tuple[Nutrition, list[str]]:
+    """Clamp label fields that contradict each other (27 g saturated fat in a 0 g fat item) or can't be real."""
     fixes = []
+    iron, vit_d = n.iron or 0.0, n.vit_d
+    fortified = bool(IRON_FORTIFIED.search(name) or "cereal" in station.lower())
+    if iron > 10 and not fortified:
+        # 93 mg of iron in 2 Tbsp of salsa is a data-entry error; fall back to a typical density.
+        est = round(min(4.0, 1.2 * (n.kcal or 0.0) / 100.0), 1)
+        fixes.append(f"label listed {iron:g} mg iron; using about {est:g} mg")
+        iron = est
+    if vit_d is not None and vit_d > 5 and not VIT_D_FOODS.search(name):
+        # Ham or sausage with 14-60 mcg of vitamin D only makes sense if the number was entered in IU.
+        fixes.append(f"label listed {vit_d:g} mcg vitamin D, which reads like IU; using {vit_d / 40:.1f} mcg")
+        vit_d = round(vit_d / 40.0, 2)
     fat = n.fat or 0.0
     sat, trans = n.sat_fat or 0.0, n.trans_fat or 0.0
     if sat > fat + 0.5:
@@ -542,12 +562,13 @@ def sanitize(n: Nutrition) -> tuple[Nutrition, list[str]]:
         added = n.carbs or 0.0
     if not fixes:
         return n, fixes
-    return Nutrition(**{**n.to_dict(), "sat_fat": sat, "trans_fat": trans, "fiber": fiber, "added_sugar": added}), fixes
+    return Nutrition(**{**n.to_dict(), "sat_fat": sat, "trans_fat": trans, "fiber": fiber, "added_sugar": added,
+                        "iron": iron, "vit_d": vit_d}), fixes
 
 
 def analyze(item: MenuItem, recipe: Recipe) -> Food:
-    n, fixes = sanitize(recipe.nutrition)
     name = item.name or recipe.name
+    n, fixes = sanitize(recipe.nutrition, name, item.station)
     low = name.lower()
     ing = (recipe.ingredients or item.searchable or "").lower()
     qty, unit = parse_serving(recipe.serving)

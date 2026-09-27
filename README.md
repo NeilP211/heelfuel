@@ -1,10 +1,19 @@
 # HeelFuel
 
-Every morning HeelFuel reads the posted menus for UNC's two dining halls, **Top of Lenoir** and **Chase**, and builds the best high-protein meals you can actually assemble from what's on the line, for every meal period.
+Every morning HeelFuel reads the posted menus for UNC's two dining halls, **Top of Lenoir** and **Chase**, and builds athlete meals you can put together from what's actually on the line: high protein, loaded with micronutrients, minimally processed. It does this for every meal period (breakfast, lunch, late lunch, dinner, late dinner, late night, and the weekend continental and brunch).
 
 **Live:** https://neilp211.github.io/heelfuel/
 
-For each hall and meal period it shows the top three meals with calories, protein, carbs, fat, fiber and micronutrients, a short note on why each one ranks and what it trades off ("has Yellow 5 but best protein option"), and a way to make it taste good using that day's sauces and sides. At the top of the page is the day's total if you ate the top pick at every meal, measured against 160 g protein and a 2,800 to 3,200 kcal maingain range.
+Each period gets up to five builds, like a Chicken Shawarma Bowl, a Chipotle Lime Chicken Power Salad or a Loaded Scramble Plate, pulled from whichever stations have the best parts that day. Every build shows:
+
+- a score out of 100 split into **Macros**, **Micros** and **Clean**
+- calories, protein, carbs, fat and fiber, with **% Daily Value**
+- the six nutrients it covers best as % Daily Value (vitamin C, potassium, iron, zinc...)
+- **Build it**: each item grouped by station, with servings; tap any item for its UNC nutrition label
+- how to plate it, why it ranks, and what it trades off ("Salty: 2,325 mg sodium", "Yellow 5 in Spinach Wrap")
+- a Nutrition Facts panel for the whole meal
+
+Each meal is judged on its own. There's no daily plan and no running total. The page is styled after UNC's own menu pages.
 
 ## How it works
 
@@ -16,19 +25,20 @@ hall pages (menus + ingredient text)    recipe.php (nutrition labels)
    fried, processed meat, estimated Mg / Zn / vitamin C / A / omega-3
                               |
                               v
-   build meals per period: protein core, then carbs, produce, an extra;
-   score each against that meal's share of the day's targets
+   fill 13 dish templates (burrito bowl, power salad, scramble...)
+   from every station, beam search, score each build per meal
                               |
                               v
-   top 3 per period + the daily plan  ->  static page on GitHub Pages
+   up to 5 distinct builds per period  ->  static page on GitHub Pages
 ```
 
-- **Data:** the menu site is WordPress; each hall page embeds the full ingredient text for every item, and a JSON endpoint returns the nutrition label per recipe. No API keys, no scraping of anything private. Labels are cached for two weeks, so a normal run only fetches the handful of new recipes.
-- **Scoring:** protein first, then calories, carbs and fat against that meal's share of the day, then evidence-weighted quality terms (fiber, fruit and vegetables, minimally processed food, micronutrients) and dose-scaled penalties (added sugar, sodium, saturated and trans fat, processed meat, fried food, dyes, emulsifiers, sweeteners). Every term carries an evidence grade, so weak gym and looksmaxxing claims (seed oils, dairy and acne, "bloat") count, but only a little. Nothing is thrown out for a gram of sugar or one additive.
-- **Realism:** meals are built the way you'd actually eat: a chef's plate from one station plus salad-bar sides beats a plate scraped together from five lines; breakfast foods stay at breakfast; portions are capped (double protein is fine, three pounds of lettuce is not).
-- **Bad data:** labels that can't be right (a 1,780 kcal slice of Swiss cheese, 27 g saturated fat in a 0 g fat vegetable side) are caught by plausibility checks, left out, and listed on the page.
+- **Data:** the menu site is WordPress; each hall page embeds the full ingredient text for every item, and a JSON endpoint returns the nutrition label per recipe. No API keys, nothing private. Labels are cached for two weeks, so a normal run only fetches the handful of new recipes.
+- **Scoring:** Macros (35) is protein first, then calories, carbs and fat against that one meal's target. Micros (35) is % Daily Value coverage of fiber, potassium, iron, calcium, vitamin D, magnesium, zinc, vitamins C and A and omega-3, plus fruit and vegetables. Clean (30) is how much of the meal is minimally processed, minus dose-scaled, evidence-weighted deductions (added sugar, sodium, saturated and trans fat, processed meat, fried food, dyes, emulsifiers, sweeteners). Weak gym and looksmaxxing claims (seed oils, dairy and acne, "bloat") count, but only a little. Nothing is thrown out for a gram of sugar or one additive.
+- **Athlete food:** protein comes from meat, fish, eggs and dairy; no tofu, quinoa or vegan swaps, and deli ham or bacon never anchors a build.
+- **Real dishes:** builds keep a cuisine together (no Santa Fe beef over penne with Szechuan green beans), portions are capped, and two builds that share most of their items count as one.
+- **Bad data:** labels that can't be right (a 1,780 kcal slice of Swiss cheese, 93 mg of iron in 2 Tbsp of salsa, vitamin D entered in IU) are caught, corrected or left out, and listed on the page.
 
-The full research, targets, every scoring factor with its evidence grade, and the 60+ citations behind them are in **[RESEARCH.md](RESEARCH.md)**.
+The full research, per-meal targets, every scoring factor with its evidence grade, and the citations behind them are in **[RESEARCH.md](RESEARCH.md)**.
 
 ## Schedule
 
@@ -45,17 +55,17 @@ python -m http.server -d site 8000                                   # then open
 pip install pytest && python -m pytest -q                            # tests run offline on fixtures
 ```
 
-Targets, meal splits, evidence weights and every penalty live in `heelfuel/config.py`.
+Per-meal targets, Daily Values, evidence weights and every penalty live in `heelfuel/config.py`.
 
 ## Layout
 
 | Path | What it does |
 |---|---|
 | `heelfuel/fetch.py`, `parse.py` | Hall pages and nutrition labels, with retries and a recipe cache |
-| `heelfuel/classify.py`, `foods.py` | Item roles, additives, processing score, plausibility checks, micronutrient estimates |
-| `heelfuel/score.py` | The meal score |
-| `heelfuel/optimize.py`, `formats.py` | Meal search, realism rules, diversity of the top three |
-| `heelfuel/explain.py`, `plan.py` | Titles, why-it-ranks notes, tasty ideas, the daily total |
+| `heelfuel/classify.py`, `foods.py` | Item roles, additives, processing score, label sanity checks, micronutrient estimates |
+| `heelfuel/score.py` | The Macros / Micros / Clean score |
+| `heelfuel/builds.py` | Dish templates, the build search, cuisine and variety rules |
+| `heelfuel/explain.py` | Steps by station, % Daily Value, why it ranks, tradeoffs, item labels |
 | `heelfuel/build.py`, `render.py`, `web/index.html` | The pipeline and the page |
 | `tests/` | Offline tests on real labels and a synthetic hall page |
 
